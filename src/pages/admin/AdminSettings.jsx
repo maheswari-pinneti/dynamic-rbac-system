@@ -86,8 +86,8 @@ export const AdminSettings = () => {
     savePermissionsMatrix(matrixDraft, currentUser);
     setIsSaving(false);
     success(
-      'Updated permissions saved and applied immediately across all colleagues!',
-      'Colleague Access Updated'
+      'Updated permissions saved and applied immediately across all roles!',
+      'Permissions Updated'
     );
   };
 
@@ -110,7 +110,7 @@ export const AdminSettings = () => {
     );
   };
 
-  const handleCreateColleague = (e) => {
+  const handleCreateUser = (e) => {
     e.preventDefault();
     if (!newUserData.name.trim() || !newUserData.email.trim()) {
       toastError('Please provide both name and a corporate email.');
@@ -118,7 +118,7 @@ export const AdminSettings = () => {
     }
 
     addUser(newUserData);
-    success(`Colleague ${newUserData.name} added with ${newUserData.role} access!`, 'Colleague Added');
+    success(`User ${newUserData.name} added with ${newUserData.role} access!`, 'User Added');
     setAddUserModalOpen(false);
     setNewUserData({
       name: '',
@@ -132,7 +132,7 @@ export const AdminSettings = () => {
   const handleConfirmDeleteUser = () => {
     if (!userToDelete) return;
     deleteUser(userToDelete.id);
-    success(`Colleague record for ${userToDelete.name} has been removed.`, 'Colleague Removed');
+    success(`User record for ${userToDelete.name} has been removed.`, 'User Removed');
     setDeleteUserModalOpen(false);
     setUserToDelete(null);
   };
@@ -149,7 +149,7 @@ export const AdminSettings = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <PageHeader
-        title="Colleague Access & Permission Governance"
+        title="Dynamic Permission Matrix & Access Governance"
         subtitle="Dynamically determine what Team Managers and Operations Specialists can view, add, modify, and remove."
         badge="Executive Administrator"
         badgeVariant="purple"
@@ -184,7 +184,7 @@ export const AdminSettings = () => {
                 icon={UserPlus}
                 onClick={() => setAddUserModalOpen(true)}
               >
-                Add New Colleague
+                Add New User
               </Button>
             )}
           </div>
@@ -216,7 +216,7 @@ export const AdminSettings = () => {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Manage Colleague Roles ({users?.length || 3})</span>
+          <span>Manage User Roles ({users?.length || 3})</span>
         </button>
       </div>
 
@@ -229,7 +229,7 @@ export const AdminSettings = () => {
               <div className="flex items-center gap-2.5">
                 <Smile className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                 <span>
-                  <strong>You have unsaved changes!</strong> Click <em>"Save Permission Settings"</em> to broadcast these updated permissions to all active colleague sessions.
+                  <strong>You have unsaved changes!</strong> Click <em>"Save Permission Settings"</em> to broadcast these updated permissions to all active user sessions.
                 </span>
               </div>
               <Button
@@ -238,7 +238,7 @@ export const AdminSettings = () => {
                 onClick={handleSaveAll}
                 isLoading={isSaving}
               >
-                Apply to Colleagues
+                Save Permissions
               </Button>
             </div>
           )}
@@ -378,12 +378,12 @@ export const AdminSettings = () => {
             </div>
           </Card>
 
-          {/* Colleague Experience Preview & Audit Trail */}
+          {/* User Experience Preview & Audit Trail */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Experience Simulation Card */}
             <Card
-              title="Inspect Colleague Perspectives"
-              subtitle="Experience what your colleagues see right now based on active rules"
+              title="Role Perspective Preview"
+              subtitle="Experience what users in each role see based on active permissions"
             >
               <div className="space-y-3.5 text-xs">
                 <p className="text-slate-600 dark:text-slate-400">
@@ -444,7 +444,7 @@ export const AdminSettings = () => {
 
             {/* Audit Trail */}
             <Card
-              title="Colleague Governance Audit Trail"
+              title="Permission Governance Audit Trail"
               subtitle="Recent adjustments made to team access and roles"
             >
               <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
@@ -475,11 +475,11 @@ export const AdminSettings = () => {
         </div>
       )}
 
-      {/* TAB 2: MANAGE COLLEAGUE ROLES & USERS */}
+      {/* TAB 2: MANAGE USER ROLES & ACCOUNTS */}
       {activeTab === 'roles' && (
         <div className="space-y-6">
           <Card
-            title="Colleague Role Management & Access Assignment"
+            title="User Role Management & Permissions"
             subtitle="Administer organizational role tiers for team members. Role reassignments take effect immediately."
             action={
               <Button
@@ -488,7 +488,7 @@ export const AdminSettings = () => {
                 icon={UserPlus}
                 onClick={() => setAddUserModalOpen(true)}
               >
-                Add Colleague
+                Add User
               </Button>
             }
           >
@@ -497,19 +497,19 @@ export const AdminSettings = () => {
               <Eye className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search colleagues by name, role, email..."
+                placeholder="Search users by name, role, email..."
                 value={userSearchTerm}
                 onChange={(e) => setUserSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
             </div>
 
-            {/* Colleague Users Table */}
+            {/* Users & Roles Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
                 <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="py-3 px-4">Colleague Profile</th>
+                    <th className="py-3 px-4">User Profile</th>
                     <th className="py-3 px-4">Department & Title</th>
                     <th className="py-3 px-4">Passkey Attestation</th>
                     <th className="py-3 px-4">Current Assigned Role</th>
@@ -601,7 +601,7 @@ export const AdminSettings = () => {
                                 info(`Simulating perspective as ${u.name} (${u.role}).`);
                               }}
                               className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                              title="Test perspective as this colleague"
+                              title="Test perspective as this role"
                             >
                               <UserCheck className="w-4 h-4" />
                             </button>
@@ -614,7 +614,7 @@ export const AdminSettings = () => {
                                   setDeleteUserModalOpen(true);
                                 }}
                                 className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                title="Remove colleague"
+                                title="Remove user"
                               >
                                 <UserMinus className="w-4 h-4" />
                               </button>
@@ -636,7 +636,7 @@ export const AdminSettings = () => {
         isOpen={resetModalOpen}
         onClose={() => setResetModalOpen(false)}
         onConfirm={handleConfirmReset}
-        title="Reset All Colleague Permissions?"
+        title="Reset All Permissions to Default?"
         message="This will restore the baseline permissions matrix. Any custom permission toggles for Managers and Specialists will be restored to defaults."
         confirmText="Yes, Reset Permissions"
         variant="warning"
@@ -647,21 +647,21 @@ export const AdminSettings = () => {
         isOpen={deleteUserModalOpen}
         onClose={() => setDeleteUserModalOpen(false)}
         onConfirm={handleConfirmDeleteUser}
-        title="Remove Colleague Record?"
-        message={`Are you sure you want to remove colleague ${userToDelete?.name}? Their access credentials will be revoked.`}
-        confirmText="Yes, Remove Colleague"
+        title="Remove User Account?"
+        message={`Are you sure you want to remove user ${userToDelete?.name}? Their access credentials will be revoked.`}
+        confirmText="Yes, Remove User"
         variant="danger"
       />
 
-      {/* Modal: Add New Colleague */}
+      {/* Modal: Add New User */}
       <Modal
         isOpen={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
-        title="Register New Team Colleague"
-        subtitle="Create an internal colleague account and assign an initial RBAC role tier"
+        title="Register New User"
+        subtitle="Create a new user account and assign an initial RBAC role"
         maxWidth="max-w-md"
       >
-        <form onSubmit={handleCreateColleague} className="space-y-3.5">
+        <form onSubmit={handleCreateUser} className="space-y-3.5">
           <Input
             label="Full Name *"
             placeholder="e.g. David Miller"
@@ -700,7 +700,7 @@ export const AdminSettings = () => {
           </div>
 
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
-            💡 The newly registered colleague can log in with their email and password <code>Password123!</code>, or enroll their personal Windows Hello / Fingerprint passkey.
+            💡 The newly registered user can log in with their email and password <code>Password123!</code>, or enroll their personal Windows Hello / Fingerprint passkey.
           </div>
 
           <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -708,7 +708,7 @@ export const AdminSettings = () => {
               Cancel
             </Button>
             <Button variant="primary" size="sm" type="submit" icon={UserPlus}>
-              Create Colleague
+              Create User
             </Button>
           </div>
         </form>

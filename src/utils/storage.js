@@ -52,5 +52,6 @@ export const STORAGE_KEYS = {
   PRODUCTS_OVERRIDE: 'rbac_products_custom_store',
   LOGIN_HISTORY: 'rbac_login_history',
   ACTIVITY_LOGS: 'rbac_activity_logs',
+  CACHED_PRODUCTS: 'rbac_cached_products_v1',
 };
 

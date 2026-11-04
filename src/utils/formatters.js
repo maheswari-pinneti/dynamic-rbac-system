@@ -9,14 +9,29 @@ export const getHumanGreeting = () => {
   return 'Good evening';
 };
 
-export const formatCurrency = (amount, currency = 'USD') => {
-  if (typeof amount !== 'number') return '$0.00';
-  return new Intl.NumberFormat('en-US', {
+export const formatINR = (amount, showDecimals = false) => {
+  if (typeof amount !== 'number') return '₹ 0';
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency,
+    currency: 'INR',
+    maximumFractionDigits: showDecimals ? 2 : 0,
+    minimumFractionDigits: showDecimals ? 2 : 0,
+  }).format(amount).replace('INR', '₹').replace(/^₹\s*/, '₹ ');
+};
+
+export const formatIndianNumber = (num) => {
+  if (typeof num !== 'number') return '0';
+  return new Intl.NumberFormat('en-IN').format(num);
+};
+
+export const formatCurrency = (amount, currency = 'INR') => {
+  if (typeof amount !== 'number') return '₹0.00';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(amount).replace('INR', '₹').trim();
 };
 
 export const formatNumber = (num) => {

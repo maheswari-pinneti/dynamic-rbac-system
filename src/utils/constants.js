@@ -62,15 +62,15 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.DASHBOARD,
     label: 'Overview Dashboard',
-    humanQuestion: 'Can colleagues view the main team overview & executive metrics?',
+    humanQuestion: 'Can users with this role view the overview dashboard and metrics?',
     category: 'Team Workspace',
-    description: 'Access summary cards, colleague activities, and today’s operational pulse.',
+    description: 'Access summary cards, operational activities, and today’s metrics.',
     route: '/dashboard',
   },
   {
     key: PERMISSIONS.ANALYTICS,
     label: 'Visual Team Analytics',
-    humanQuestion: 'Can colleagues inspect visual growth charts & performance trends?',
+    humanQuestion: 'Can users with this role inspect analytics and performance charts?',
     category: 'Insights & Health',
     description: 'Inspect category volume, monthly progress, and throughput charts.',
     route: '/analytics',
@@ -78,7 +78,7 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.VIEW_RECORDS,
     label: 'Browse Catalog Records',
-    humanQuestion: 'Can colleagues browse and search the product catalog?',
+    humanQuestion: 'Can users with this role browse and search the product catalog?',
     category: 'Catalog Management',
     description: 'Search, filter, and view detailed specifications for all items.',
     route: '/products',
@@ -86,7 +86,7 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.CREATE_RECORDS,
     label: 'Add New Products',
-    humanQuestion: 'Can colleagues contribute new items to the inventory?',
+    humanQuestion: 'Can users with this role create and add new products to inventory?',
     category: 'Catalog Management',
     description: 'Register fresh products with pricing, stock levels, and descriptions.',
     action: 'create',
@@ -94,7 +94,7 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.EDIT_RECORDS,
     label: 'Update Existing Products',
-    humanQuestion: 'Can colleagues edit details, prices, and stock counts?',
+    humanQuestion: 'Can users with this role edit product details, prices, and stock?',
     category: 'Catalog Management',
     description: 'Modify specifications, adjust inventory counts, and update photos.',
     action: 'edit',
@@ -102,7 +102,7 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.DELETE_RECORDS,
     label: 'Remove Products',
-    humanQuestion: 'Can colleagues permanently delete items from inventory?',
+    humanQuestion: 'Can users with this role permanently delete products from inventory?',
     category: 'Catalog Management',
     description: 'Permanently remove obsolete records from the catalog.',
     action: 'delete',
@@ -110,7 +110,7 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.REPORTS,
     label: 'Operational Reports',
-    humanQuestion: 'Can colleagues export inventory summaries and valuation sheets?',
+    humanQuestion: 'Can users with this role view and export inventory reports?',
     category: 'Team Workspace',
     description: 'Review stock valuations and download spreadsheet CSV summaries.',
     route: '/reports',
@@ -118,16 +118,16 @@ export const PERMISSION_DEFINITIONS = [
   {
     key: PERMISSIONS.SETTINGS,
     label: 'Admin Permission Settings',
-    humanQuestion: 'Can colleagues configure who is allowed to do what across the team?',
+    humanQuestion: 'Can users with this role configure dynamic role permissions and settings?',
     category: 'Governance & Security',
-    description: 'Manage the dynamic permission matrix and govern colleague privileges.',
+    description: 'Manage the dynamic permission matrix and govern role privileges.',
     route: '/admin/settings',
     adminRestricted: true,
   },
   {
     key: PERMISSIONS.PROFILE,
     label: 'Personal Identity & Passkeys',
-    humanQuestion: 'Can colleagues view their personal identity profile & linked passkeys?',
+    humanQuestion: 'Can users with this role view and update their profile and passkeys?',
     category: 'Personal Identity',
     description: 'Inspect personal bio, role privileges, and register Windows Hello / Fingerprints.',
     route: '/profile',
