@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   BarChart3,
@@ -9,7 +9,6 @@ import {
   UserCheck,
   ChevronRight,
   X,
-  LogOut,
   Layers,
   Crown,
   Activity,
@@ -17,23 +16,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePermission } from '../../context/PermissionContext';
-import { useToast } from '../../context/ToastContext';
 import { PERMISSIONS, ROLES, ROLE_HUMAN_TITLES } from '../../utils/constants';
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { hasPermission } = usePermission();
-  const { info } = useToast();
-  const navigate = useNavigate();
 
   const userRole = currentUser?.role || ROLES.ADMIN;
   const humanRoleTitle = ROLE_HUMAN_TITLES[userRole] || 'Executive Administrator';
-
-  const handleLogout = () => {
-    logout();
-    info('You have safely signed out of your session. Welcome back anytime!', 'Signed Out');
-    navigate('/login', { replace: true });
-  };
 
   // Navigation Items matching the Dynamic RBAC PRD Requirements
   const navItems = [
@@ -212,18 +202,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
             );
           })}
 
-          {/* Logout Button */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-all text-left mt-3 border border-transparent hover:border-rose-900/50"
-          >
-            <div className="flex items-center gap-3">
-              <LogOut className="w-4 h-4 text-rose-500 group-hover:rotate-6 transition-transform" />
-              <span>Sign Out</span>
-            </div>
-            <ChevronRight className="w-3.5 h-3.5 text-rose-500/70" />
-          </button>
         </div>
       </aside>
     </>
