@@ -54,7 +54,7 @@ import ChartPreviewModal from '../../components/common/ChartPreviewModal';
 
 export const Dashboard = () => {
   const { allProducts } = useProduct();
-  const { currentUser, users, loginHistory, switchRole } = useAuth();
+  const { currentUser, users, loginHistory } = useAuth();
   const { activityLogs } = usePermission();
   const { isDark } = useTheme();
 
@@ -663,26 +663,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* 1-Click Role Switcher */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs flex-shrink-0">
-          <span className="text-[10px] font-bold uppercase text-slate-400 px-2 hidden md:inline">
-            Active Role:
-          </span>
-          {[ROLES.ADMIN, ROLES.MANAGER, ROLES.EMPLOYEE].map((role) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => switchRole(role)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                userRole === role
-                  ? 'bg-blue-600 text-white shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-              }`}
-            >
-              {role}
-            </button>
-          ))}
-        </div>
+
       </div>
 
       {/* ========================================================
