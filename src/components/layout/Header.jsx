@@ -2,30 +2,34 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Menu,
-  UserX,
-  User,
-  Crown,
+  Search,
+  Calendar,
+  Bell,
+  Settings,
+  Maximize2,
+  Minimize2,
   ChevronDown,
+  User,
+  UserX,
+  Crown,
   Sparkles,
-  Smile,
-  Heart,
-  Fingerprint,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePermission } from '../../context/PermissionContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { ROLES, PERMISSIONS, ROLE_HUMAN_TITLES } from '../../utils/constants';
-import { getHumanGreeting } from '../../utils/formatters';
-import Badge from '../common/Badge';
 import ThemeToggle from '../common/ThemeToggle';
+import UserAvatar from '../common/UserAvatar';
+import CalendarDropdown from '../common/CalendarDropdown';
 
-export const Header = ({ onMenuClick }) => {
+export const Header = ({ onMenuClick, isSidebarOpen }) => {
   const { currentUser, logout } = useAuth();
   const { hasPermission } = usePermission();
-  const { humanThemeName } = useTheme();
+  const { info } = useToast();
   const navigate = useNavigate();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -38,87 +42,121 @@ export const Header = ({ onMenuClick }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/logout');
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+        setIsFullscreen(false);
+      }
+    }
   };
 
-  const userRole = currentUser?.role || ROLES.EMPLOYEE;
-  const humanRoleTitle = ROLE_HUMAN_TITLES[userRole] || 'Team Specialist';
+  const handleLogout = () => {
+    logout();
+    info('You have been safely signed out.', 'Signed Out');
+    navigate('/login', { replace: true });
+  };
+
+  const userRole = currentUser?.role || ROLES.ADMIN;
+  const humanRoleTitle = ROLE_HUMAN_TITLES[userRole] || 'Executive Administrator';
   const canAccessSettings = userRole === ROLES.ADMIN || hasPermission(PERMISSIONS.SETTINGS, userRole);
-  const greeting = getHumanGreeting();
-  const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Colleague';
+  const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Admin';
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200/90 dark:border-slate-800 px-4 sm:px-6 h-16 flex items-center justify-between transition-colors duration-200">
-      {/* Left side: Hamburger button + Warm Greeting */}
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#0d1527]/95 backdrop-blur border-b border-slate-200/90 dark:border-slate-800/90 px-4 sm:px-6 h-16 flex items-center justify-between transition-colors duration-200 shadow-2xs">
+      {/* Left side: Hamburger button + Search Bar */}
+      <div className="flex items-center gap-3.5 flex-1 min-w-0 mr-4">
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none"
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 focus:outline-none transition-colors border border-slate-200/80 dark:border-slate-800"
+          title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           aria-label="Toggle navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
-            {greeting}, {firstName}! 👋
-          </span>
-          <span className="hidden md:inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Active Session
-          </span>
+        {/* Global Search Bar */}
+        <div className="relative max-w-xs sm:max-w-sm w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search products, records, or SKU..."
+            className="w-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 rounded-full pl-9 pr-4 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white dark:focus:bg-slate-800 transition-all shadow-inner"
+          />
         </div>
       </div>
 
-      {/* Right side: Human Theme indicator + Toggle + Role badge & User Profile Dropdown */}
-      <div className="flex items-center gap-2.5 sm:gap-3" ref={dropdownRef}>
-        {/* Human Theme Pill */}
-        <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 rounded-xl border border-amber-200/80 dark:border-amber-900 shadow-2xs">
-          <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-          <span>Human Theme</span>
+      {/* Right side: Date Pill, Notification Bell, Settings, Fullscreen, ThemeToggle, User Profile */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0" ref={dropdownRef}>
+        {/* Interactive Calendar Date Dropdown */}
+        <div className="hidden xl:block">
+          <CalendarDropdown />
         </div>
 
-        {/* Human Theme Mode Switcher */}
-        <ThemeToggle size="md" />
+        {/* Notification Bell with Badge */}
+        <button
+          type="button"
+          className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          title="Notifications (5 pending alerts)"
+          aria-label="Notifications"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center animate-pulse shadow-xs">
+            5
+          </span>
+        </button>
 
-        {/* Quick shortcut to Admin Settings for Admin */}
-        {canAccessSettings && (
+        {/* Settings Icon */}
+        {canAccessSettings ? (
           <Link
             to="/admin/settings"
-            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/80 rounded-xl border border-purple-200 dark:border-purple-800 transition-colors"
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors hidden sm:inline-flex"
+            title="System & Permission Settings"
           >
-            <Crown className="w-3.5 h-3.5" />
-            <span>Colleague Permissions</span>
+            <Settings className="w-4 h-4" />
+          </Link>
+        ) : (
+          <Link
+            to="/profile"
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors hidden sm:inline-flex"
+            title="Profile & Settings"
+          >
+            <Settings className="w-4 h-4" />
           </Link>
         )}
 
+        {/* Fullscreen Expand Button */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors hidden md:inline-flex"
+          title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen View'}
+          aria-label="Toggle Fullscreen"
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
+
+        {/* Premium Light & Dark Mode Slider Switch */}
+        <ThemeToggle size="md" />
+
         {/* User profile dropdown trigger */}
-        <div className="relative">
+        <div className="relative pl-1">
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+            className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
           >
-            <div className="relative">
-              <img
-                src={
-                  currentUser?.avatar ||
-                  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80'
-                }
-                alt={currentUser?.name || 'User avatar'}
-                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 object-cover bg-slate-100"
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border border-white dark:border-slate-900 rounded-full" />
-            </div>
+            <UserAvatar user={currentUser} size="md" showStatus={true} />
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                {currentUser?.name || 'Guest Colleague'}
+                {firstName}
               </span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                {humanRoleTitle}
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold leading-tight">
+                Main Branch
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
@@ -129,15 +167,17 @@ export const Header = ({ onMenuClick }) => {
             <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 py-1.5 text-xs text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-top-2">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                 <p className="font-bold text-slate-900 dark:text-white truncate">
-                  {currentUser?.name}
+                  {currentUser?.name || 'Administrator'}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                  {currentUser?.email}
+                  {currentUser?.email || 'admin@enterprise.com'}
                 </p>
                 <div className="mt-2 flex items-center justify-between">
-                  <Badge role={userRole} size="sm" dot />
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    {currentUser?.department}
+                  <span className="text-[10px] bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-md font-bold border border-purple-200 dark:border-purple-800">
+                    {humanRoleTitle}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Main Branch
                   </span>
                 </div>
               </div>
@@ -146,7 +186,7 @@ export const Header = ({ onMenuClick }) => {
                 <Link
                   to="/profile"
                   onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  className="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
                 >
                   <User className="w-4 h-4 text-slate-400" />
                   <span>My Identity & Passkeys</span>
@@ -159,7 +199,7 @@ export const Header = ({ onMenuClick }) => {
                     className="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-purple-700 dark:text-purple-400 font-medium"
                   >
                     <Crown className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span>Manage Colleague Access</span>
+                    <span>Role & Access Settings</span>
                   </Link>
                 )}
               </div>

@@ -1,161 +1,54 @@
 # Module 6: Dynamic Sidebar & Protected Routes
 
 ## 1. Overview & Objective
-Module 6 connects the dynamic permissions established in Modules 4 and 5 directly into the application's visual navigation and routing infrastructure. The sidebar adjusts its menu items dynamically in real time, and route-level guards block unauthorized direct URL access with a 403 Access Denied screen.
+Module 6 connects the Dynamic RBAC Engine to the navigation UI and routing layer. The sidebar navigation is generated dynamically based on the active user's permissions, action buttons are conditionally rendered, and route changes are protected against unauthorized URL manipulation.
 
 ---
 
-## 2. Dynamic Sidebar Generation (`Sidebar.jsx`)
+## 2. Core Features & Capabilities
 
-The sidebar navigation is generated programmatically from an item descriptor array that maps each link to a permission requirement:
+### 2.1 Dynamic Sidebar Generation
+- Menu items are filtered at runtime based on `hasPermission`:
+  - If the Admin revokes **Reports**, the *"Reports & Export"* link automatically disappears from the Sidebar.
+  - If the Admin revokes **Analytics**, the *"Analytics Dashboard"* link automatically disappears.
+  - If the Admin revokes **Dashboard**, only permitted modules remain visible.
+- Clean layout matching corporate standards, terminating directly with the **Sign Out** button.
 
-```javascript
-const navItems = [
-  {
-    name: 'Dashboard',
-    path: '/dashboard',
-    icon: Users,
-    permission: PERMISSIONS.DASHBOARD,
-  },
-  {
-    name: 'Analytics Dashboard',
-    path: '/analytics',
-    icon: Smile,
-    permission: PERMISSIONS.ANALYTICS,
-    badge: 'Live',
-  },
-  {
-    name: 'Product Records',
-    path: '/products',
-    icon: HeartHandshake,
-    permission: PERMISSIONS.VIEW_RECORDS,
-  },
-  {
-    name: 'Reports',
-    path: '/reports',
-    icon: Award,
-    permission: PERMISSIONS.REPORTS,
-  },
-  {
-    name: 'Admin Settings',
-    path: '/admin/settings',
-    icon: Crown,
-    permission: PERMISSIONS.SETTINGS,
-    adminOnly: true,
-  },
-  {
-    name: 'Profile',
-    path: '/profile',
-    icon: UserCheck,
-    permission: PERMISSIONS.PROFILE,
-  },
-];
+### 2.2 Feature-Level Authorization (`<CanAccess />`)
+- Action buttons throughout the UI appear and disappear dynamically:
+  - If the Admin revokes `records.create`, the **"Add Product"** button disappears.
+  - If the Admin grants `records.delete` to Managers, the **"Delete"** trash icon immediately appears in the product table.
+  - If the Admin revokes `records.edit`, the **"Edit"** pencil icon disappears.
+
+### 2.3 Page-Level Protected Routes (`<ProtectedRoute />`)
+- Wraps all enterprise routes in `App.jsx`.
+- If a user attempts to bypass the UI by manually typing an unauthorized URL in the browser address bar (e.g., an Employee typing `/admin/settings` or `/reports`):
+  - Access is intercepted immediately.
+  - The application renders the dedicated **HTTP 403 – Access Denied** page.
+  - Displays current role, attempted section, required authorization policy, and a **"Return to Dashboard"** button.
+
+---
+
+## 3. Component Architecture
+
 ```
-
-### 2.1 Filtering Rules
-Before rendering, the items are filtered against the current user's role and dynamic permissions:
-```javascript
-const visibleNavItems = navItems.filter((item) => {
-  // 1. Administrators see all navigation items
-  if (userRole === ROLES.ADMIN) return true;
-
-  // 2. Hide admin-only items for non-admins
-  if (item.adminOnly && userRole !== ROLES.ADMIN) return false;
-
-  // 3. Check dynamic runtime permission
-  if (item.permission) {
-    return hasPermission(item.permission, userRole);
-  }
-
-  return true;
-});
-```
-
-### 2.2 Live Visual Manifestations
-
-| Administrative Action | Direct Result in Sidebar | Direct Result on Page |
-| :--- | :--- | :--- |
-| **Disable Reports** for Manager | `Reports` menu item is completely hidden from the sidebar. | Attempting to visit `/reports` redirects to `/access-denied`. |
-| **Disable Analytics** for Employee | `Analytics Dashboard` menu item disappears. | Attempting to visit `/analytics` triggers 403 Access Denied. |
-| **Disable View Records** | `Product Records` menu item disappears. | Attempting to visit `/products` triggers 403 Access Denied. |
-| **Grant Delete Records** | *(Sidebar unchanged)* | Trash can icon automatically appears on every product card. |
-| **Disable Create Records** | *(Sidebar unchanged)* | "Add New Product" button disappears from `/products`. |
-
----
-
-## 3. Protected Routes Architecture (`ProtectedRoute.jsx`)
-
-To ensure security cannot be bypassed by typing paths directly into the browser URL bar, all internal routes are wrapped with `<ProtectedRoute>`:
-
-```jsx
-// src/App.jsx Route Setup
-<Route
-  path="/analytics"
-  element={
-    <ProtectedRoute requiredPermission={PERMISSIONS.ANALYTICS}>
-      <Analytics />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/admin/settings"
-  element={
-    <ProtectedRoute adminOnly requiredPermission={PERMISSIONS.SETTINGS}>
-      <AdminSettings />
-    </ProtectedRoute>
-  }
-/>
-```
-
-### 3.1 Route Verification Logic
-When a route change occurs:
-1. **Authentication Check**: If the user is unauthenticated, redirect to `/login` with return intent.
-2. **Admin Universal Access**: If `currentUser.role === 'Admin'`, allow access immediately.
-3. **Admin-Only Guard**: If `adminOnly` is set and `role !== 'Admin'`, redirect to `/access-denied`.
-4. **Permission Guard**: If `requiredPermission` is set, evaluate `hasPermission(requiredPermission, role)`. If `false`, redirect to `/access-denied` with informative contextual parameters.
-5. **Route Mapping Guard**: Verify `canAccessRoute(pathname, role)` to prevent path traversal attempts.
-
----
-
-## 4. 403 Access Denied Gateway (`src/pages/error/AccessDenied.jsx`)
-
-When unauthorized access is attempted, the system displays an empathetic 403 screen providing:
-- **Status Code**: `403 – Access Denied`
-- **Contextual Reason**: Explains why access was blocked (e.g. *"Your role (Employee) lacks the required 'analytics.view' permission configured in Admin Settings."*).
-- **Required Permission**: Identifies the exact missing permission key.
-- **Human Guidance**: Instructions on how to request privilege updates from team administrators.
-- **Action Buttons**: Quick triggers to return to the safe Overview Dashboard or return to previous screen.
-
----
-
-## 5. Feature-Level Action Guards (`<CanAccess />`)
-
-In-page actions (buttons, modals, toolbars) are guarded by `<CanAccess>`:
-
-```jsx
-// Example: Create Record Button
-<CanAccess permission={PERMISSIONS.CREATE_RECORDS}>
-  <Button onClick={() => setIsCreateModalOpen(true)}>
-    Add New Product
-  </Button>
-</CanAccess>
-
-// Example: Delete Record Button
-<CanAccess permission={PERMISSIONS.DELETE_RECORDS}>
-  <button onClick={() => handleDelete(item.id)}>
-    <Trash2 className="w-4 h-4 text-rose-500" />
-  </button>
-</CanAccess>
+src/
+├── components/rbac/
+│   ├── ProtectedRoute.jsx      # Route guard checking authentication & permissions
+│   └── CanAccess.jsx           # Feature-level conditional rendering wrapper
+├── components/layout/
+│   ├── Sidebar.jsx             # Dynamic navigation filtered by active permissions
+│   ├── Header.jsx              # Search, calendar dropdown, theme switch & user avatar
+│   └── AppLayout.jsx           # Master shell layout with responsive sidebar
+└── pages/error/
+    ├── AccessDenied.jsx        # Corporate 403 Access Denied page
+    └── NotFound.jsx            # Corporate 404 Page Not Found page
 ```
 
 ---
 
-## 6. Step-by-Step Evaluation Guide
-1. Log in as **Elena Rostova** (`employee@enterprise.com`).
-2. Verify the sidebar displays only the permissions granted to Elena (Dashboard, Analytics, Product Records, Profile).
-3. Confirm that **Admin Settings** is completely absent from the sidebar.
-4. Now, manually type `http://localhost:5173/admin/settings` into the browser address bar and press Enter.
-5. **Expected Result**: The route guard blocks access immediately, redirecting to `/access-denied` with a clear explanation that Administrator privileges are required.
-6. Open `/products` as Elena. Notice the absence of "Add New Product" and trash icons.
-7. Switch to Sarah Connor's account, grant Employee `records.create` and `records.delete` in Admin Settings, and click Save.
-8. Switch back to Elena: verify the buttons now immediately appear without code changes.
+## 4. Evaluation Checklist
+- [x] Sidebar menu items dynamically appear and disappear based on permissions.
+- [x] Feature buttons (`Add Product`, `Edit`, `Delete`) appear and disappear dynamically.
+- [x] Unauthorized URL navigation triggers 403 – Access Denied page.
+- [x] Clean corporate design for 403 and 404 error pages.

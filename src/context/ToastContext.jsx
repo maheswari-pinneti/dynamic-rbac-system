@@ -43,7 +43,7 @@ export const ToastProvider = ({ children }) => {
   );
 
   const info = useCallback(
-    (message, title = 'Colleague Update') => addToast({ title, message, type: 'info' }),
+    (message, title = 'Notification') => addToast({ title, message, type: 'info' }),
     [addToast]
   );
 

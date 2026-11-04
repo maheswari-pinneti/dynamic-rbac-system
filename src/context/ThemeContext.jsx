@@ -97,7 +97,7 @@ export const ThemeProvider = ({ children }) => {
     applyThemeToDOM(theme);
   }, [theme, applyThemeToDOM]);
 
-  const humanThemeName = isDark ? 'Human Warm Twilight' : 'Human Warm Daylight';
+  const humanThemeName = isDark ? 'Dark Mode' : 'Light Mode';
 
   return (
     <ThemeContext.Provider value={{ theme, isDark, setTheme, toggleTheme, humanThemeName, isHumanTheme: true }}>
