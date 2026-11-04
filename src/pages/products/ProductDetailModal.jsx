@@ -167,7 +167,7 @@ export const ProductDetailModal = ({
               )}
               {product.isCustom ? (
                 <Badge variant="purple" size="sm">
-                  Colleague Custom Item
+                  Custom Catalog Item
                 </Badge>
               ) : (
                 <Badge variant="blue" size="sm">
@@ -246,7 +246,7 @@ export const ProductDetailModal = ({
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Colleague Overview</span>
+            <span>Product Overview</span>
           </button>
 
           <button
@@ -276,7 +276,7 @@ export const ProductDetailModal = ({
           </button>
         </div>
 
-        {/* Tab 1: Colleague Overview Tab */}
+        {/* Tab 1: Product Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-4">
             {/* Human Curator Attribution Card */}
@@ -436,7 +436,7 @@ export const ProductDetailModal = ({
           </div>
         )}
 
-        {/* Tab 3: Customer & Colleague Reviews Tab */}
+        {/* Tab 3: Customer Reviews Tab */}
         {activeTab === 'reviews' && (
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
             {reviews.length === 0 ? (
@@ -458,7 +458,7 @@ export const ProductDetailModal = ({
                         {rev.reviewerName ? rev.reviewerName[0] : 'U'}
                       </div>
                       <span className="font-bold text-slate-900 dark:text-white">
-                        {rev.reviewerName || 'Anonymous Colleague'}
+                        {rev.reviewerName || 'Verified Customer'}
                       </span>
                     </div>
 

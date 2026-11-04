@@ -79,7 +79,7 @@ export const Reports = () => {
     <div className="space-y-6">
       <PageHeader
         title="Team Operational & Catalog Reports"
-        subtitle="Comprehensive inventory valuation, supply schedule, and downloadable colleague records."
+        subtitle="Comprehensive inventory valuation, supply schedule, and downloadable inventory records."
         badge="Reports Workspace"
         badgeVariant="blue"
         actions={
@@ -140,7 +140,7 @@ export const Reports = () => {
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Colleague Access Status
+            Role Access Status
           </span>
           <div className="text-2xl font-black text-brand-600 dark:text-brand-400 mt-2">
             Authorized

@@ -36,6 +36,7 @@ export const ProductList = () => {
     totalRecords,
     loading,
     error,
+    isOfflineMode,
     categories,
     searchTerm,
     setSearchTerm,
@@ -139,7 +140,7 @@ export const ProductList = () => {
       {/* Page Header */}
       <PageHeader
         title="Curated Product Catalog"
-        subtitle="Browse, search, and manage products overseen by our colleagues across departments."
+        subtitle="Browse, search, and manage products synchronized with DummyJSON REST API."
         badge={`${totalRecords} Products Curated`}
         badgeVariant="primary"
         actions={
@@ -221,6 +222,32 @@ export const ProductList = () => {
         </div>
       </div>
 
+      {/* Resilient Offline Status Banner */}
+      {isOfflineMode && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 shadow-2xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex-shrink-0">
+              <WifiOff className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold">Offline / Local Resilience Active:</span>
+              <span className="ml-1 text-amber-800 dark:text-amber-300/90">
+                Third-party REST API timed out. Operating seamlessly with pre-cached catalog & complete local CRUD persistence.
+              </span>
+            </div>
+          </div>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={fetchProducts}
+            isLoading={loading}
+            className="flex-shrink-0 border-amber-300 dark:border-amber-700 hover:bg-amber-100/60 dark:hover:bg-amber-900/40"
+          >
+            Retry Connection
+          </Button>
+        </div>
+      )}
+
       {/* Search, Filter & Sort Controls */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-4 shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -229,7 +256,7 @@ export const ProductList = () => {
             <Eye className="w-4 h-4 absolute left-3 top-3 text-slate-400 dark:text-slate-500 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search by title, brand, or colleague..."
+              placeholder="Search by title, brand, category, or SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
@@ -304,7 +331,7 @@ export const ProductList = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         {loading ? (
           <TableSkeleton rows={8} cols={6} />
-        ) : error ? (
+        ) : error && products.length === 0 ? (
           <div className="p-12 text-center">
             <Smile className="w-10 h-10 text-rose-500 mx-auto mb-3" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Could not retrieve catalog records</h3>
@@ -349,7 +376,7 @@ export const ProductList = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
                 {products.map((item, index) => {
                   const stockStatus = getHumanStockStatus(item.stock);
-                  // Assign human colleague attribution
+                  // Assign creator attribution
                   const curator = DEMO_USERS[index % DEMO_USERS.length];
 
                   return (
@@ -531,7 +558,7 @@ export const ProductList = () => {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Remove this item from catalog?"
-        message={`Are you sure you want to remove "${productToDelete?.title}"? This permanently updates the central inventory for all colleagues.`}
+        message={`Are you sure you want to remove "${productToDelete?.title}"? This permanently updates the central inventory catalog.`}
         confirmText="Yes, Remove Item"
         isLoading={isDeleting}
         variant="danger"

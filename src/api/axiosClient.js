@@ -4,7 +4,7 @@ const BASE_URL = 'https://dummyjson.com';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 6000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

@@ -169,11 +169,11 @@ export const ProductFormModal = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
-            label="Price (USD) *"
+            label="Price (INR / ₹) *"
             name="price"
             type="number"
             step="0.01"
-            placeholder="299.99"
+            placeholder="2499.00"
             icon={Award}
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
