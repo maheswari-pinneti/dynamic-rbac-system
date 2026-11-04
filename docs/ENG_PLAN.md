@@ -8,7 +8,7 @@
   * **Zero Hardcoded Permissions**: Access policies must be runtime configurable by the Admin.
   * **Multi-Modal Auth**: Support both traditional passwords and FIDO2 / WebAuthn passkeys (Face / Fingerprint).
   * **Dark & Light Mode**: Complete, first-class theme toggle without FOUC flashes.
-  * **Human Theme & Icons**: Conversational, human-centric tone and iconography.
+  * **Light / Dark Theme & Icons**: Conversational, human-centric tone and iconography.
 
 ---
 
@@ -55,7 +55,7 @@ flowchart TD
   * Staff access status Donut Chart
   * Role distribution Pie Chart
   * API throughput Area Chart
-* Add audit trail feeds and colleague login history tables.
+* Add audit trail feeds and user login history tables.
 
 ### Phase 6: Human Polish, Dark Theme & Hardening (Completed)
 * Complete dark theme audit across all 9 pages, modals, tables, and Recharts strokes.

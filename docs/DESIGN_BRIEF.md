@@ -1,14 +1,14 @@
 # Design Brief & Human-Centered UX Specification
 
-## 1. Design Philosophy: The "Human Theme"
+## 1. Design Philosophy: The "Light / Dark Theme"
 
 Most enterprise administrative and RBAC interfaces are cold, robotic, and intimidating—dominated by technical jargon, harsh tables, and cryptic error numbers.
 
-The **PeopleRBAC Human Theme** reverses this paradigm. Every screen, component, modal, and state is designed to treat colleagues as people first:
+The **Dynamic RBAC Light / Dark Theme** reverses this paradigm. Every screen, component, modal, and state is designed to treat users as people first:
 
 * **Warmth over Sterility**: Greetings incorporate time-of-day human warmth ("Good afternoon, Sarah! 👋") and conversational context.
-* **Empathy over Punishment**: When a user attempts an unauthorized action or navigates to a restricted route, instead of an abrasive "403 Forbidden Error", they receive an empathetic notice: *"Hold on, Colleague! Your current role does not have authorization based on policies set by the Admin in the Permission Matrix"*, paired with a one-click shortcut to switch roles or request access.
-* **Curator Attribution**: Products in the catalog are not anonymous database rows; each item highlights the **primary human colleague curator** who manages it, complete with real photo avatars and team departments.
+* **Empathy over Punishment**: When a user attempts an unauthorized action or navigates to a restricted route, instead of an abrasive "403 Forbidden Error", they receive an empathetic notice: *"Hold on, User! Your current role does not have authorization based on policies set by the Admin in the Permission Matrix"*, paired with a one-click shortcut to switch roles or request access.
+* **Curator Attribution**: Products in the catalog are not anonymous database rows; each item highlights the **primary human user curator** who manages it, complete with real photo avatars and team departments.
 * **Human-Centered Stock Health**: Raw stock integers are supplemented with human-friendly descriptions: *"Abundant Stock (>10 units)"*, *"Low Stock (1-10 units)"*, and *"Out of Stock (Needs restock)"*.
 
 ---
@@ -21,7 +21,7 @@ The application strictly utilizes **human-centric icons** from `lucide-react`:
 | :--- | :--- | :--- |
 | **Executive Administrator** | `Crown` | Conveys governance, stewardship, and master permission authority. |
 | **Team Manager** | `Briefcase` | Represents organizational leadership, operational management, and team oversight. |
-| **Operations Specialist** | `UserCheck` / `Users` | Represents front-line colleagues handling everyday catalog activities. |
+| **Operations Specialist** | `UserCheck` / `Users` | Represents front-line users handling everyday catalog activities. |
 | **Passkey / Windows Hello** | `ScanFace` | Friendly human biometric visual for facial recognition. |
 | **Passkey / Fingerprint** | `Fingerprint` | Direct, familiar touch verification icon. |
 | **Catalog & Collaboration** | `HeartHandshake` | Represents teamwork and mutual responsibility across departments. |

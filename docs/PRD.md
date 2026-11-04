@@ -6,7 +6,7 @@
 Traditional enterprise software treats authorization as static code logic: changing an employee’s capabilities requires modifying source code, updating configuration files, and waiting on a full redeployment cycle. Furthermore, interfaces are often cold, robotic, and punitive when access limits are reached.
 
 ### 1.2. Product Vision
-**PeopleRBAC** is a modern, human-centered enterprise Role-Based Access Management platform where administrators dynamically manage permissions for Managers and Specialists at runtime with immediate effect across all user sessions. The system integrates real-world REST API inventory management, rich analytics, and multi-modal biometric passkey authentication.
+**Dynamic RBAC** is a modern, human-centered enterprise Role-Based Access Management platform where administrators dynamically manage permissions for Managers and Specialists at runtime with immediate effect across all user sessions. The system integrates real-world REST API inventory management, rich analytics, and multi-modal biometric passkey authentication.
 
 ---
 
@@ -16,7 +16,7 @@ Traditional enterprise software treats authorization as static code logic: chang
 | :--- | :--- | :--- |
 | **Sarah Connor** | **Executive Administrator** | Has universal governance over all systems; configures the Permission Matrix at runtime; defines what Managers and Specialists can view, add, modify, or remove; monitors audit trails. |
 | **Marcus Vance** | **Team Manager** | Oversees catalog operations; reviews valuations; manages inventory within the operational boundaries granted dynamically by the Administrator. |
-| **Elena Rostova** | **Operations Specialist** | Front-line colleague executing daily catalog inquiries, updating product notes when authorized, and inspecting inventory conditions. |
+| **Elena Rostova** | **Operations Specialist** | Front-line user executing daily catalog inquiries, updating product notes when authorized, and inspecting inventory conditions. |
 
 ---
 
@@ -36,14 +36,14 @@ Traditional enterprise software treats authorization as static code logic: chang
   * Team Managers Count
   * Operations Specialists Count
   * Configured RBAC Matrix Rules
-  * Recent Colleague Activities Count
+  * Recent User Activities Count
   * New Additions This Month
 * **FR-2.2: Multi-Chart Visualizations (Recharts)**:
   * **Bar Chart**: Product Category distribution across departments.
   * **Line Chart**: 6-Month catalog growth and addition trajectory.
   * **Donut Chart**: Supply health breakdown (In Stock vs Low Stock vs Out of Stock).
   * **Pie Chart**: Role-tier distribution across active staff members.
-* **FR-2.3: Live Activity Feed**: Chronological stream of colleague actions with human photo avatars and time-ago timestamps.
+* **FR-2.3: Live Activity Feed**: Chronological stream of user actions with human photo avatars and time-ago timestamps.
 * **FR-2.4: Sign-In History**: Security audit log tracking login timestamps, browsers, and authentication methods.
 
 ### Module 3: Third-Party REST API CRUD Management
@@ -51,13 +51,13 @@ Traditional enterprise software treats authorization as static code logic: chang
 * **FR-3.2: Universal Click-to-Inspect**: Clicking any product card or table row launches a rich 3-tab inspection modal displaying:
   * Multi-image photo gallery with thumbnail switching
   * Pricing, retail comparison, and discount savings
-  * Primary colleague curator attribution
+  * Primary user curator attribution
   * Shipping, warranty, dimensions, weight, and return policy
   * Customer reviews with star ratings and comments
 * **FR-3.3: Product Creation (`POST`)**: Accessible form modal with client validation submitting new items to the REST API.
 * **FR-3.4: Product Modification (`PUT`)**: In-place edit form updating product properties.
 * **FR-3.5: Product Removal (`DELETE`)**: Danger-styled confirmation modal removing products from the catalog.
-* **FR-3.6: Search, Filter & Sort**: Live instant search by title/brand/colleague, category filtering, stock status filtering, and multi-field sorting.
+* **FR-3.6: Search, Filter & Sort**: Live instant search by title/brand/user, category filtering, stock status filtering, and multi-field sorting.
 
 ### Module 4: Dynamic Role-Based Access Control (Core Engine)
 * **FR-4.1: Three Role Tiers**: Distinct `Admin`, `Manager`, and `Employee` tiers.

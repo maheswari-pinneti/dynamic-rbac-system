@@ -45,7 +45,7 @@ sequenceDiagram
     Matrix-->>Settings: Displays amber "You have unsaved changes!" alert
     Sarah->>Settings: Clicks "Save Permission Settings"
     Settings->>PContext: Dispatches savePermissionsMatrix()
-    PContext-->>Settings: Emits Success Toast "Colleague Access Updated"
+    PContext-->>Settings: Emits Success Toast "User Access Updated"
 
     Note over Sarah,Marcus: Role switch to test live effect
     Sarah->>Settings: Clicks "Marcus Vance (Team Manager)" perspective button
@@ -76,7 +76,7 @@ flowchart TD
     Inspect --> Modal[ProductDetailModal Opens]
     
     Modal --> TabChoice{Select Modal Tab}
-    TabChoice -->|Colleague Overview| M1[View Curator Avatar, Stock Pill, SKU & Catalog ID]
+    TabChoice -->|User Overview| M1[View Curator Avatar, Stock Pill, SKU & Catalog ID]
     TabChoice -->|Specs & Logistics| M2[View Shipping Timeline, Warranty, Return Policy, WxHxD Dimensions]
     TabChoice -->|Customer Reviews| M3[View Real Star Ratings, Review Testimonials & Author Dates]
     

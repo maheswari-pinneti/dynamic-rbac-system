@@ -21,7 +21,7 @@ erDiagram
 
 ### 2.1. User Entity (`User`)
 
-Represents an authenticated team colleague in the system.
+Represents an authenticated team user in the system.
 
 ```typescript
 interface User {
@@ -31,7 +31,7 @@ interface User {
   role: 'Admin' | 'Manager' | 'Employee'; // Core RBAC tier
   department: string;              // Organization unit, e.g. "Executive Leadership"
   title: string;                   // Human title, e.g. "Director of Operations"
-  avatar: string;                  // HTTPS URL to human colleague photo
+  avatar: string;                  // HTTPS URL to human user photo
   password?: string;               // Hashed / plain representation for demo auth
   passkeys: PasskeyCredential[];   // Registered biometric hardware credentials
   createdAt: string;               // ISO 8601 timestamp
@@ -96,7 +96,7 @@ interface PermissionDefinition {
 
 ### 2.4. Product Catalog Entity (`Product`)
 
-Represents a product item retrieved from the REST API or created by colleagues.
+Represents a product item retrieved from the REST API or created by users.
 
 ```typescript
 interface Product {
@@ -120,7 +120,7 @@ interface Product {
   warrantyInformation?: string;    // e.g. "1 year limited manufacturer warranty"
   shippingInformation?: string;    // e.g. "Ships in 2-3 business days"
   availabilityStatus?: string;     // e.g. "In Stock" | "Low Stock" | "Out of Stock"
-  reviews?: ProductReview[];       // Customer and colleague review list
+  reviews?: ProductReview[];       // Customer and user review list
   returnPolicy?: string;           // e.g. "30 days return policy"
   minimumOrderQuantity?: number;   // Minimum batch procurement quantity
   meta?: {
@@ -132,7 +132,7 @@ interface Product {
   images?: string[];               // High-resolution image URLs
   thumbnail: string;               // Primary display image URL
   isCustom?: boolean;              // True if added via the application UI
-  curatorId?: string;              // Attributed colleague user ID
+  curatorId?: string;              // Attributed user user ID
 }
 ```
 
@@ -148,13 +148,13 @@ interface ProductReview {
 }
 ```
 
-### 2.6. Colleague Activity & Audit Log (`ActivityLog`)
+### 2.6. User Activity & Audit Log (`ActivityLog`)
 
 ```typescript
 interface ActivityLog {
   id: string;                      // Unique log ID, e.g. "log_173000000"
   timestamp: string;               // ISO 8601 timestamp
-  user: string;                    // Name of acting colleague
+  user: string;                    // Name of acting user
   role: Role;                      // Role tier at time of action
   action: string;                  // Action label, e.g. "Updated Permission Matrix"
   details: string;                 // Conversational description of change
@@ -167,8 +167,8 @@ interface ActivityLog {
 ```typescript
 interface LoginRecord {
   id: string;                      // Unique session log ID
-  userName: string;                // Colleague name
-  email: string;                   // Colleague email
+  userName: string;                // User name
+  email: string;                   // User email
   role: Role;                      // Role logged in as
   method: 'Password' | 'Windows Hello Face' | 'Fingerprint Biometrics';
   browser: string;                 // Detected user agent, e.g. "Chrome 122 on Windows"
@@ -185,11 +185,11 @@ All client state is synchronized across browser sessions and tabs using standard
 
 | LocalStorage Key | Entity Stored | Purpose & Lifecycle |
 | :--- | :--- | :--- |
-| `rbac_auth_user` | `User` | Active authenticated colleague session. |
-| `rbac_users_list` | `User[]` | Registered colleague accounts and passkeys. |
+| `rbac_auth_user` | `User` | Active authenticated user session. |
+| `rbac_users_list` | `User[]` | Registered user accounts and passkeys. |
 | `rbac_login_history` | `LoginRecord[]` | Audit trail of previous logins. |
 | `rbac_permissions` | `PermissionMatrix` | Runtime permission matrix overrides. |
-| `rbac_activity_logs` | `ActivityLog[]` | Real-time colleague action feed. |
+| `rbac_activity_logs` | `ActivityLog[]` | Real-time user action feed. |
 | `rbac_custom_products` | `Product[]` | Products created by users via POST. |
 | `rbac_updated_products`| `Record<number, Partial<Product>>` | Local overrides for edited products. |
 | `rbac_deleted_product_ids` | `number[]` | IDs of removed products. |

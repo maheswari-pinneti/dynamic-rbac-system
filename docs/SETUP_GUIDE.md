@@ -44,11 +44,11 @@ Launches a lightweight static server hosting the production artifacts.
 
 ---
 
-## 3. Pre-Configured Colleague Demo Credentials
+## 3. Pre-Configured User Demo Credentials
 
-The application is pre-seeded with three enterprise colleague accounts:
+The application is pre-seeded with three enterprise user accounts:
 
-| Role Tier | Human Colleague | Corporate Email | Password | Biometric / Passkey Support |
+| Role Tier | Human User | Corporate Email | Password | Biometric / Passkey Support |
 | :--- | :--- | :--- | :--- | :--- |
 | **Executive Admin** | **Sarah Connor** | `admin@enterprise.com` | `Password123!` | Windows Hello Face / Touch Fingerprint |
 | **Team Manager** | **Marcus Vance** | `manager@enterprise.com` | `Password123!` | Windows Hello Face / Touch Fingerprint |
@@ -84,7 +84,7 @@ Follow these steps to demonstrate real-time dynamic permission propagation:
    * Locate the **Delete Records** row.
    * Notice that for **Team Managers**, the toggle switch is currently **OFF** (Restricted).
 3. **Switch to Marcus Vance (Team Manager)**:
-   * Click **"Marcus Vance (Team Manager)"** under *Inspect Colleague Perspectives*.
+   * Click **"Marcus Vance (Team Manager)"** under *Inspect User Perspectives*.
    * Navigate to **Curated Catalog** (`/products`).
    * **Verification**: Notice that the red **Delete (Trash)** button is **hidden** across all product rows.
 4. **Grant Permission Dynamically**:

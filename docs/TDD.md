@@ -89,7 +89,7 @@ pie title Test Coverage Allocation
 2. **When** Elena manually enters `http://localhost:5173/admin/settings` into the browser bar.
 3. **Then** the application intercepts navigation and renders `/access-denied`.
 4. **And** the page displays:
-   * Colleague Role: `Employee (Specialist Operations)`
+   * User Role: `Employee (Specialist Operations)`
    * Attempted Section: `/admin/settings`
    * Governing Policy: `Administrator Privileges`
    * Shortcut button: `Switch to Sarah (Admin) to adjust permissions`.

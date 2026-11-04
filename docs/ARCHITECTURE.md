@@ -118,7 +118,7 @@ sequenceDiagram
     Admin->>UI: Clicks "Save Permission Settings"
     UI->>PContext: savePermissionsMatrix(updatedMatrix)
     PContext->>Storage: Persist rbac_permissions
-    PContext-->>Admin: Emit Colleague Access Updated Toast
+    PContext-->>Admin: Emit User Access Updated Toast
 
     Note over PContext,Manager: Runtime State Updates Immediately
     Manager->>Catalog: Views Curated Catalog
