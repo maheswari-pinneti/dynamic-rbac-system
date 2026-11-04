@@ -13,48 +13,169 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
 } from 'recharts';
 import {
-  Sparkles,
-  Heart,
-  Users,
-  Eye,
-  Footprints,
-  HelpingHand,
-  CheckCircle2,
-  Smile,
+  BarChart3,
+  TrendingUp,
+  PieChart as PieIcon,
+  LineChart as LineIcon,
+  Boxes,
+  ShieldCheck,
+  Activity,
+  Layers,
+  ArrowUpRight,
+  Maximize2,
 } from 'lucide-react';
 import { useProduct } from '../../context/ProductContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { ROLES } from '../../utils/constants';
 import PageHeader from '../../components/common/PageHeader';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
-import Button from '../../components/common/Button';
+import ChartPreviewModal from '../../components/common/ChartPreviewModal';
 
 export const Analytics = () => {
-  const { analyticsData, allProducts } = useProduct();
-  const { currentUser } = useAuth();
+  const { allProducts } = useProduct();
+  const { currentUser, users } = useAuth();
   const { isDark } = useTheme();
   const [timeRange, setTimeRange] = useState('30d');
+  // Interactive Chart Preview Modal State
+  const [previewChart, setPreviewChart] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const gridStroke = isDark ? '#334155' : '#f1f5f9';
+  const handleOpenChartPreview = (config) => {
+    setPreviewChart(config);
+    setIsPreviewOpen(true);
+  };
+
+
+  const gridStroke = isDark ? '#1e293b' : '#f1f5f9';
   const axisColor = isDark ? '#94a3b8' : '#64748b';
-  const axisLineColor = isDark ? '#334155' : '#e2e8f0';
-  const targetBarColor = isDark ? '#334155' : '#e2e8f0';
+  const cardBg = isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs';
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const totalRecords = allProducts?.length || 194;
+  const activeRecords = (allProducts || []).filter((p) => (p.stock ?? 15) > 10).length || 168;
+  const lowStockRecords = (allProducts || []).filter((p) => (p.stock ?? 15) <= 10).length || 26;
+
+  // Chart 1: Line Chart Data (Monthly Growth)
+  const lineChartData = [
+    { month: 'Feb', records: 125, active: 108 },
+    { month: 'Mar', records: 142, active: 124 },
+    { month: 'Apr', records: 156, active: 138 },
+    { month: 'May', records: 170, active: 150 },
+    { month: 'Jun', records: 182, active: 160 },
+    { month: 'Jul', records: 194, active: 168 },
+  ];
+
+  // Chart 2: Bar Chart Data (Record Distribution)
+  const barChartData = [
+    { name: 'Beauty', count: 42 },
+    { name: 'Furniture', count: 35 },
+    { name: 'Fragrances', count: 28 },
+    { name: 'Groceries', count: 24 },
+    { name: 'Laptops', count: 18 },
+    { name: 'Phones', count: 15 },
+  ];
+
+  // Chart 3: Pie Chart Data (Status Distribution - Solid Pie)
+  const pieChartData = [
+    { name: 'In-Stock Ready', value: activeRecords, color: '#10b981' },
+    { name: 'Low Stock Alert', value: lowStockRecords - 4, color: '#f59e0b' },
+    { name: 'Critical Outage', value: 4, color: '#ef4444' },
+  ];
+
+  // Chart 4: Donut Chart Data (Activity Trend & Operations Share)
+  const donutChartData = [
+    { name: 'Read & Query Calls', value: 55, color: '#2563eb' },
+    { name: 'Catalog Updates', value: 25, color: '#10b981' },
+    { name: 'Create Operations', value: 12, color: '#f59e0b' },
+    { name: 'Delete Operations', value: 8, color: '#ef4444' },
+  ];
+
+
+  // ==========================================================
+  // CHART PREVIEW CONFIGURATIONS
+  // ==========================================================
+  const analyticsGrowthConfig = {
+    title: 'Monthly Catalog Growth',
+    subtitle: '6-Month historical catalog trajectory vs. in-stock fulfillment',
+    type: 'line',
+    icon: LineIcon,
+    badge: '+18.4% MoM',
+    data: lineChartData,
+    xAxisKey: 'month',
+    series: [
+      { key: 'records', name: 'Total Records', color: '#2563eb', strokeWidth: 3 },
+      { key: 'active', name: 'In-Stock Units', color: '#10b981', strokeWidth: 2.5, dashed: true },
+    ],
+    metrics: [
+      { label: 'Current Total Records', value: '194 Units', change: '+18.4%', isPositive: true },
+      { label: 'In-Stock Ready Units', value: '168 Units', change: '86.6% Rate', isPositive: true },
+      { label: '6-Month Net Growth', value: '+69 Items', change: '+55.2%', isPositive: true },
+      { label: 'Peak Velocity Month', value: 'Jul 2026', change: 'Current', isPositive: true },
+    ],
+  };
+
+  const analyticsDistributionConfig = {
+    title: 'Record Distribution by Sector',
+    subtitle: 'Catalog items categorized by commercial product category',
+    type: 'bar',
+    icon: BarChart3,
+    badge: '24 Sectors',
+    data: barChartData,
+    xAxisKey: 'name',
+    series: [
+      { key: 'count', name: 'Items in Catalog', color: '#0d9488' },
+    ],
+    metrics: [
+      { label: 'Lead Product Sector', value: 'Beauty (42)', change: '25.9% Share', isPositive: true },
+      { label: 'Second Sector', value: 'Furniture (35)', change: '21.6% Share', isPositive: true },
+      { label: 'Average Items / Sector', value: '27 Items', change: 'Balanced', isPositive: true },
+      { label: 'Active Monitored SKUs', value: '162 Units', change: '100% Synced', isPositive: true },
+    ],
+  };
+
+  const analyticsStatusConfig = {
+    title: 'Inventory Status Distribution',
+    subtitle: 'Stock buffer evaluation and replenishment thresholds',
+    type: 'pie',
+    icon: PieIcon,
+    badge: '86% In-Stock',
+    data: pieChartData,
+    metrics: [
+      { label: 'In-Stock Ready', value: '168 SKUs', change: '86% Healthy', isPositive: true },
+      { label: 'Low Stock Priority', value: '22 SKUs', change: '11% Reorder', isPositive: false },
+      { label: 'Critical Outage Alert', value: '4 SKUs', change: 'Action Required', isPositive: false },
+      { label: 'Fulfillment Index', value: '96.8%', change: '+1.2%', isPositive: true },
+    ],
+  };
+
+  const analyticsActivityConfig = {
+    title: 'Activity Trend & Operations Share',
+    subtitle: 'Breakdown of team query calls, catalog modifications, and system operations',
+    type: 'donut',
+    icon: Boxes,
+    centerLabel: 'Activity',
+    badge: '100 Operations',
+    data: donutChartData,
+    metrics: [
+      { label: 'Read & Query Calls', value: '55 Calls', change: '55% Volume', isPositive: true },
+      { label: 'Catalog Updates', value: '25 Updates', change: '25% Volume', isPositive: true },
+      { label: 'Create Operations', value: '12 Adds', change: '12% Volume', isPositive: true },
+      { label: 'Delete Operations', value: '8 Removes', change: '8% Volume', isPositive: false },
+    ],
+  };
+
+  const CustomChartTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900/95 dark:bg-slate-950/95 text-white text-xs p-2.5 rounded-lg shadow-xl border border-slate-700 dark:border-slate-800 backdrop-blur-xs">
-          <p className="font-semibold text-slate-200">{label}</p>
+        <div className="bg-slate-900 text-white text-xs p-2.5 rounded-xl shadow-xl border border-slate-700">
+          <p className="font-bold text-slate-200">{label || payload[0]?.name}</p>
           {payload.map((entry, index) => (
-            <p key={`item-${index}`} className="text-slate-300 mt-0.5">
-              <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ backgroundColor: entry.color || entry.fill }} />
-              {entry.name}: <span className="font-bold text-white">{entry.value}</span>
+            <p key={`entry-${index}`} className="mt-1 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+              <span className="text-slate-300">{entry.name}:</span>
+              <span className="font-bold text-white">{entry.value}</span>
             </p>
           ))}
         </div>
@@ -66,182 +187,244 @@ export const Analytics = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Colleague Insights & Human Analytics"
-        subtitle="Multi-dimensional trend analysis, team throughput metrics, and catalog vitality intelligence."
-        badge="Human Insights"
+        title="Enterprise Analytics Dashboard"
+        subtitle="Multi-dimensional trend analysis, capacity forecasting, and dynamic RBAC activity analytics."
+        badge="Live Metrics"
         badgeVariant="blue"
         actions={
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5 text-xs">
+            <div className="inline-flex rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5 text-xs shadow-2xs">
               {['7d', '30d', '90d', '1y'].map((range) => (
                 <button
                   key={range}
                   type="button"
                   onClick={() => setTimeRange(range)}
-                  className={`px-3 py-1 font-medium rounded-md transition-colors ${timeRange === range
-                      ? 'bg-brand-600 text-white shadow-xs'
+                  className={`px-3 py-1 font-semibold rounded-lg transition-colors ${
+                    timeRange === range
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                  }`}
                 >
                   {range.toUpperCase()}
                 </button>
               ))}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={HelpingHand}
-              onClick={() => window.print()}
-            >
-              Export View
-            </Button>
           </div>
         }
       />
 
       {/* Analytics KPI Highlights */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-brand-600 to-teal-700 text-white p-5 rounded-2xl shadow-sm">
-          <div className="flex items-center justify-between text-brand-100 text-xs">
-            <span>Catalog Vitality Index</span>
-            <Heart className="w-4 h-4 text-brand-200" />
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white p-5 rounded-2xl shadow-md">
+          <div className="flex items-center justify-between text-blue-100 text-xs">
+            <span className="font-bold uppercase tracking-wider">Catalog Health Index</span>
+            <Activity className="w-4 h-4 text-blue-200" />
           </div>
-          <div className="text-3xl font-extrabold mt-2 tracking-tight">94.8%</div>
-          <p className="text-xs text-brand-100 mt-1">
-            +3.2% operational care across active curated items
+          <div className="text-3xl font-extrabold mt-2 tracking-tight">96.4%</div>
+          <p className="text-xs text-blue-100 mt-1">
+            +3.8% inventory buffer accuracy across 24 sectors
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-5 rounded-2xl shadow-xs">
+        <div className={`p-5 rounded-2xl border ${cardBg}`}>
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
-            <span>Human Team Throughput</span>
-            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <span className="font-bold uppercase tracking-wider">Daily REST Operations</span>
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 tracking-tight">
-            1,420 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">+18%</span>
+            1,420 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">+18.2%</span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Daily REST calls coordinated by colleagues</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Synchronized with DummyJSON REST backend
+          </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-5 rounded-2xl shadow-xs">
+        <div className={`p-5 rounded-2xl border ${cardBg}`}>
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
-            <span>Colleague Trust Permissions</span>
-            <Users className="w-4 h-4 text-purple-500" />
+            <span className="font-bold uppercase tracking-wider">Dynamic RBAC Matrix</span>
+            <ShieldCheck className="w-4 h-4 text-purple-500" />
           </div>
           <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 tracking-tight">
             9 Matrix Rules
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Dynamically evaluated on every route & UI action
+            Enforced dynamically at runtime across all roles
           </p>
         </div>
       </div>
 
-      {/* Main Charts: Activity Trend Area Chart & Monthly Growth Bar Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          title="Activity Trend (Dispatched CRUD Operations)"
-          subtitle="Reads, Writes, and Updates dispatched by client sessions this week"
-          action={<Badge variant="primary" size="sm">Area Chart • Activity Trend</Badge>}
+      {/* 4 Core Recharts Visualization Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* CHART 1: LINE CHART — Monthly Growth */}
+        <div
+          onClick={() => handleOpenChartPreview(analyticsGrowthConfig)}
+          className={`rounded-2xl border ${cardBg} p-5 flex flex-col justify-between cursor-pointer group hover:border-blue-500/80 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 relative`}
+          title="Click chart to preview and inspect details"
         >
-          <div className="h-80 w-full pt-2">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <LineIcon className="w-4 h-4 text-blue-500" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Monthly Growth (Line Chart)
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="blue" size="sm">Line Chart</Badge>
+              <span className="opacity-0 group-hover:opacity-100 text-blue-600 dark:text-blue-400 transition-opacity p-0.5 rounded" title="Preview chart">
+                <Maximize2 className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
+
+          <div className="h-64 w-full pt-3">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={analyticsData.activityTrend}
-                margin={{ top: 10, right: 15, left: -20, bottom: 20 }}
-              >
-                <defs>
-                  <linearGradient id="colorReads" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0.0} />
-                  </linearGradient>
-                  <linearGradient id="colorWrites" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
+              <LineChart data={lineChartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 11, fill: axisColor }}
-                  tickLine={false}
-                  axisLine={{ stroke: axisLineColor }}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: axisColor }}
-                  tickLine={false}
-                  axisLine={{ stroke: axisLineColor }}
-                />
-                <Tooltip content={<CustomTooltip />} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: axisColor }} tickLine={false} />
+                <Tooltip content={<CustomChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                <Area
-                  type="monotone"
-                  dataKey="reads"
-                  name="Read / Query Ops"
-                  stroke="#0d9488"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorReads)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="writes"
-                  name="Create / Delete Ops"
-                  stroke="#8b5cf6"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorWrites)"
-                />
-              </AreaChart>
+                <Line type="monotone" dataKey="records" name="Total Records" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="active" name="In-Stock Units" stroke="#10b981" strokeWidth={2.5} strokeDasharray="4 4" dot={{ r: 3 }} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </div>
 
-        <Card
-          title="Growth Projection vs Capacity"
-          subtitle="Monthly record addition trajectory against capacity targets"
-          action={<Badge variant="blue" size="sm">Bar Chart</Badge>}
+        {/* CHART 2: BAR CHART — Record Distribution */}
+        <div
+          onClick={() => handleOpenChartPreview(analyticsDistributionConfig)}
+          className={`rounded-2xl border ${cardBg} p-5 flex flex-col justify-between cursor-pointer group hover:border-blue-500/80 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 relative`}
+          title="Click chart to preview and inspect details"
         >
-          <div className="h-80 w-full pt-2">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-500" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Record Distribution (Bar Chart)
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="emerald" size="sm">Bar Chart</Badge>
+              <span className="opacity-0 group-hover:opacity-100 text-blue-600 dark:text-blue-400 transition-opacity p-0.5 rounded" title="Preview chart">
+                <Maximize2 className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
+
+          <div className="h-64 w-full pt-3">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={analyticsData.monthlyGrowth}
-                margin={{ top: 10, right: 15, left: -20, bottom: 20 }}
-              >
+              <BarChart data={barChartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 11, fill: axisColor }}
-                  tickLine={false}
-                  axisLine={{ stroke: axisLineColor }}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: axisColor }}
-                  tickLine={false}
-                  axisLine={{ stroke: axisLineColor }}
-                />
-                <Tooltip content={<CustomTooltip />} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: axisColor }} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: axisColor }} tickLine={false} />
+                <Tooltip content={<CustomChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                <Bar
-                  dataKey="records"
-                  name="Actual Inventory"
-                  fill="#0284c7"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="target"
-                  name="Capacity Target"
-                  fill={targetBarColor}
-                  radius={[4, 4, 0, 0]}
-                />
+                <Bar dataKey="count" name="Items in Catalog" fill="#0d9488" radius={[6, 6, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </div>
+
+        {/* CHART 3: PIE CHART — Status Distribution (Solid Pie) */}
+        <div
+          onClick={() => handleOpenChartPreview(analyticsStatusConfig)}
+          className={`rounded-2xl border ${cardBg} p-5 flex flex-col justify-between cursor-pointer group hover:border-blue-500/80 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 relative`}
+          title="Click chart to preview and inspect details"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <PieIcon className="w-4 h-4 text-amber-500" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Status Distribution (Pie Chart)
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="amber" size="sm">Solid Pie Chart</Badge>
+              <span className="opacity-0 group-hover:opacity-100 text-blue-600 dark:text-blue-400 transition-opacity p-0.5 rounded" title="Preview chart">
+                <Maximize2 className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
+
+          <div className="h-64 w-full flex items-center justify-center pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`pie-cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* CHART 4: DONUT CHART — Activity Trend */}
+        <div
+          onClick={() => handleOpenChartPreview(analyticsActivityConfig)}
+          className={`rounded-2xl border ${cardBg} p-5 flex flex-col justify-between cursor-pointer group hover:border-blue-500/80 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 relative`}
+          title="Click chart to preview and inspect details"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <Boxes className="w-4 h-4 text-purple-500" />
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Activity Trend (Donut Chart)
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="purple" size="sm">Donut Chart</Badge>
+              <span className="opacity-0 group-hover:opacity-100 text-blue-600 dark:text-blue-400 transition-opacity p-0.5 rounded" title="Preview chart">
+                <Maximize2 className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
+
+          <div className="relative h-64 w-full flex items-center justify-center pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={donutChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {donutChartData.map((entry, index) => (
+                    <Cell key={`donut-cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomChartTooltip />} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-6">
+              <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Interactive Chart Preview Modal */}
+      <ChartPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        chart={previewChart}
+      />
     </div>
   );
 };
 
 export default Analytics;
-
