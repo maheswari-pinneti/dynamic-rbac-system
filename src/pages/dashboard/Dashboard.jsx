@@ -127,9 +127,9 @@ export const Dashboard = () => {
 
   // Chart 3: Pie Chart Data (Status Distribution - True solid Pie)
   const pieChartStatusDistribution = [
-    { name: 'In-Stock Ready', value: totalActiveRecords, color: '#10b981' },
-    { name: 'Low Inventory', value: totalInactiveRecords - 4, color: '#f59e0b' },
-    { name: 'Out of Stock', value: 4, color: '#ef4444' },
+    { name: 'In-Stock Ready', value: Math.max(1, totalActiveRecords), color: '#10b981' },
+    { name: 'Low Inventory', value: Math.max(1, totalInactiveRecords > 4 ? totalInactiveRecords - 4 : totalInactiveRecords), color: '#f59e0b' },
+    { name: 'Out of Stock', value: Math.max(1, Math.min(totalInactiveRecords, 4)), color: '#ef4444' },
   ];
 
   // Chart 4: Donut Chart Data (Activity Trend & Category Share)
@@ -345,16 +345,28 @@ export const Dashboard = () => {
   // Custom Chart Tooltip
   const CustomChartTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const headerLabel = label || payload[0]?.payload?.name || payload[0]?.name;
       return (
-        <div className="bg-slate-900 text-white text-xs p-2.5 rounded-xl shadow-xl border border-slate-700">
-          <p className="font-bold text-slate-200">{label || payload[0]?.name}</p>
-          {payload.map((entry, index) => (
-            <p key={`entry-${index}`} className="mt-1 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
-              <span className="text-slate-300">{entry.name}:</span>
-              <span className="font-bold text-white">{entry.value}</span>
+        <div className="bg-slate-900 text-white text-xs p-2.5 rounded-xl shadow-xl border border-slate-700 min-w-[130px]">
+          {headerLabel && (
+            <p className="font-bold text-slate-200 border-b border-slate-800 pb-1 mb-1">
+              {headerLabel}
             </p>
-          ))}
+          )}
+          {payload.map((entry, index) => {
+            const entryName = entry.name || entry.payload?.name || 'Count';
+            const entryValue = entry.value !== undefined ? entry.value : entry.payload?.value;
+            const entryColor = entry.color || entry.fill || entry.payload?.fill || '#3b82f6';
+            return (
+              <p key={`entry-${index}`} className="mt-1 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: entryColor }} />
+                  <span>{entryName}:</span>
+                </span>
+                <span className="font-bold font-mono text-white">{entryValue}</span>
+              </p>
+            );
+          })}
         </div>
       );
     }

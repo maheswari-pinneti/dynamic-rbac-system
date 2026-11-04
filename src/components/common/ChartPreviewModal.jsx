@@ -61,25 +61,33 @@ export const ChartPreviewModal = ({ isOpen, onClose, chart }) => {
   // Custom high-contrast tooltip
   const CustomChartTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const headerLabel = label || payload[0]?.payload?.name || payload[0]?.name;
       return (
         <div className="bg-slate-900 text-white text-xs p-3 rounded-xl shadow-2xl border border-slate-700 min-w-[140px]">
-          <p className="font-bold text-slate-200 border-b border-slate-800 pb-1 mb-1.5">
-            {label || payload[0]?.name}
-          </p>
-          {payload.map((entry, index) => (
-            <p key={`entry-${index}`} className="flex items-center justify-between gap-3 text-[11px] py-0.5">
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: entry.color || entry.fill }}
-                />
-                {entry.name}:
-              </span>
-              <span className="font-mono font-bold text-white">
-                {entry.value !== undefined ? entry.value : entry.payload?.value}
-              </span>
+          {headerLabel && (
+            <p className="font-bold text-slate-200 border-b border-slate-800 pb-1 mb-1.5">
+              {headerLabel}
             </p>
-          ))}
+          )}
+          {payload.map((entry, index) => {
+            const entryName = entry.name || entry.payload?.name || 'Value';
+            const entryValue = entry.value !== undefined ? entry.value : entry.payload?.value;
+            const entryColor = entry.color || entry.fill || entry.payload?.fill || '#3b82f6';
+            return (
+              <p key={`entry-${index}`} className="flex items-center justify-between gap-3 text-[11px] py-0.5">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: entryColor }}
+                  />
+                  <span>{entryName}:</span>
+                </span>
+                <span className="font-mono font-bold text-white">
+                  {entryValue}
+                </span>
+              </p>
+            );
+          })}
         </div>
       );
     }
