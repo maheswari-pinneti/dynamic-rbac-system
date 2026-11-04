@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   CheckCircle2,
@@ -11,6 +11,11 @@ import {
   UserPlus,
   Heart,
   HeartHandshake,
+  Sun,
+  Moon,
+  Monitor,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePermission } from '../../context/PermissionContext';
@@ -26,6 +31,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Input from '../../components/common/Input';
 import BiometricModal from '../../components/common/BiometricModal';
+import UserAvatar from '../../components/common/UserAvatar';
 
 export const Profile = () => {
   const { currentUser, updateUserProfile, addPasskeyToUser } = useAuth();
@@ -40,7 +46,32 @@ export const Profile = () => {
     department: currentUser?.department || '',
   });
 
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || '',
+        department: currentUser.department || '',
+      });
+    }
+  }, [currentUser]);
+
   const [isBiometricModalOpen, setIsBiometricModalOpen] = useState(false);
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      error('Please select an image smaller than 3MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      updateUserProfile({ avatar: dataUrl });
+      success('Profile photo updated successfully!', 'Photo Updated');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -90,46 +121,68 @@ export const Profile = () => {
         <div className="space-y-6">
           <Card>
             <div className="flex flex-col items-center text-center p-2">
-              <img
-                src={
-                  currentUser?.avatar ||
-                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'User'}`
-                }
-                alt={currentUser?.name}
-                className="w-24 h-24 rounded-full border-4 border-slate-100 object-cover shadow-sm mb-3"
-              />
-              <h2 className="text-lg font-bold text-slate-900">{currentUser?.name}</h2>
-              <p className="text-xs text-slate-500">{currentUser?.email}</p>
+              <div className="relative mb-3 group">
+                <UserAvatar user={currentUser} size="xl" showStatus={true} />
+                <label
+                  htmlFor="avatar-file-input"
+                  className="absolute bottom-0 right-0 p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md cursor-pointer transition-transform hover:scale-110"
+                  title="Upload new profile photo"
+                >
+                  <Camera className="w-4 h-4" />
+                  <input
+                    id="avatar-file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {currentUser?.avatar && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateUserProfile({ avatar: '' });
+                    success('Reset to default profile silhouette.', 'Photo Reset');
+                  }}
+                  className="text-[11px] text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 font-semibold mb-2"
+                >
+                  Reset to Default Photo
+                </button>
+              )}
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{currentUser?.name}</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{currentUser?.email}</p>
 
               <div className="mt-3 flex items-center gap-2">
                 <Badge role={userRole} size="md" dot />
-                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                   {currentUser?.department}
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 pt-5 border-t border-slate-100 text-xs space-y-3">
+            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Smile className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Smile className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   Email
                 </span>
-                <span className="font-medium text-slate-800">{currentUser?.email}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{currentUser?.email}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   Department
                 </span>
-                <span className="font-medium text-slate-800">{currentUser?.department}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{currentUser?.department}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Footprints className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <Footprints className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   Member Since
                 </span>
-                <span className="font-medium text-slate-800">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
                   {formatDate(currentUser?.createdAt || '2026-01-01')}
                 </span>
               </div>
@@ -155,20 +208,20 @@ export const Profile = () => {
               {userPasskeys.map((pk) => (
                 <div
                   key={pk.id}
-                  className="p-2.5 rounded-lg border border-slate-200 bg-slate-50/80 flex items-center justify-between text-xs"
+                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between text-xs"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-md bg-brand-100 text-brand-700">
+                    <div className="p-1.5 rounded-lg bg-brand-100 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300">
                       <Fingerprint className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900">{pk.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="font-semibold text-slate-900 dark:text-white">{pk.name}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                         {formatDate(pk.createdAt)}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                     Active
                   </span>
                 </div>
@@ -188,30 +241,28 @@ export const Profile = () => {
                   setTheme('light');
                   success('Light theme activated.', 'Appearance Updated');
                 }}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs ${
-                  theme === 'light'
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs cursor-pointer ${theme === 'light'
                     ? 'border-brand-500 bg-brand-50/60 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 font-bold shadow-xs'
                     : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                }`}
+                  }`}
               >
-                <Smile className="w-4 h-4 text-amber-500" />
-                <span>Daylight</span>
+                <Sun className="w-4 h-4 text-amber-500" />
+                <span>Light</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   setTheme('dark');
-                  success('Human Twilight theme activated.', 'Appearance Updated');
+                  success('Dark theme activated.', 'Appearance Updated');
                 }}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs ${
-                  theme === 'dark'
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs cursor-pointer ${theme === 'dark'
                     ? 'border-brand-500 bg-brand-50/60 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 font-bold shadow-xs'
                     : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                }`}
+                  }`}
               >
-                <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" />
-                <span>Twilight</span>
+                <Moon className="w-4 h-4 text-indigo-400" />
+                <span>Dark</span>
               </button>
 
               <button
@@ -220,14 +271,13 @@ export const Profile = () => {
                   setTheme('system');
                   success('System preference matching activated.', 'Appearance Updated');
                 }}
-                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs ${
-                  theme === 'system'
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs cursor-pointer ${theme === 'system'
                     ? 'border-brand-500 bg-brand-50/60 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 font-bold shadow-xs'
                     : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                }`}
+                  }`}
               >
-                <HeartHandshake className="w-4 h-4 text-amber-400" />
-                <span>Auto</span>
+                <Monitor className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span>System Auto</span>
               </button>
             </div>
           </Card>
@@ -265,35 +315,35 @@ export const Profile = () => {
               </Badge>
             }
           >
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {permissionDefinitions.map((def) => {
                 const isGranted = userRole === ROLES.ADMIN || hasPermission(def.key, userRole);
                 return (
                   <div
                     key={def.key}
-                    className="py-3 px-2 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors rounded-lg"
+                    className="py-3 px-2 flex items-center justify-between gap-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors rounded-xl"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 text-xs">
+                        <span className="font-bold text-slate-900 dark:text-white text-xs">
                           {def.label}
                         </span>
-                        <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                        <span className="text-[10px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-medium">
                           {def.category}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{def.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{def.description}</p>
                     </div>
 
                     <div className="flex-shrink-0">
                       {isGranted ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           Granted
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
-                          <XCircle className="w-3.5 h-3.5" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          <XCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                           Restricted
                         </span>
                       )}

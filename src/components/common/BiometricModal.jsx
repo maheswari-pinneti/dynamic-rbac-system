@@ -17,7 +17,7 @@ export const BiometricModal = ({
   onClose,
   onSuccess,
   mode = 'login', // 'login' | 'register'
-  userName = 'Colleague',
+  userName = 'User',
   userRole = 'Admin',
   isNativeAvailable = true,
   onTriggerNative,

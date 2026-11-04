@@ -1,35 +1,35 @@
 # Module 1: Authentication & Identity Management
 
 ## 1. Overview & Objective
-Module 1 provides a responsive, human-centered authentication gateway supporting both password-based and modern biometric WebAuthn / FIDO2 passkey credentials. User credentials and sessions are securely managed and persisted in browser local storage without Redux.
+Module 1 delivers an enterprise-grade authentication system supporting both standard password-based credentials and modern WebAuthn / FIDO2 passkeys (Windows Hello, Fingerprint, Touch ID). User accounts, session tokens, and security audit logs are managed and persisted in browser storage using React Context API without Redux.
 
 ---
 
 ## 2. Core Features & Capabilities
 
 ### 2.1 Login System (`/login`)
-- **Email & Password Authentication**: Validated with RFC-compliant email regex and minimum 6-character length checks.
-- **Show/Hide Password**: `<Eye />` and `<EyeOff />` interactive toggle icons for clear credential inspection.
-- **Biometric Passkey Authentication**: Windows Hello Facial Recognition, Touch ID, and hardware fingerprint sensor support via WebAuthn API (`navigator.credentials.get`).
-- **1-Click Pre-Configured Colleague Credentials**:
-  - **Sarah Connor** (`admin@enterprise.com` / `Password123!`) – Administrator
-  - **Marcus Vance** (`manager@enterprise.com` / `Password123!`) – Team Manager
-  - **Elena Rostova** (`employee@enterprise.com` / `Password123!`) – Operations Specialist
-- **Form Validation & Error States**: Field-level feedback preventing invalid submissions.
+- **Email & Password Authentication**: Validated with RFC-compliant email regex and minimum 6-character password rules.
+- **Show/Hide Password**: Interactive `<Eye />` and `<EyeOff />` toggles for credential inspection.
+- **Biometric Passkey Authentication**: Hardware-level authentication via W3C WebAuthn API (`navigator.credentials.get`), supporting Windows Hello Facial & PIN, hardware fingerprint sensors, and security keys.
+- **1-Click Pre-Configured Demo Credentials**:
+  - **Sarah Connor** (`admin@enterprise.com` / `Password123!`) – Administrator (Super Admin)
+  - **Marcus Vance** (`manager@enterprise.com` / `Password123!`) – Manager (Department Lead)
+  - **Elena Rostova** (`employee@enterprise.com` / `Password123!`) – Employee (Operations Specialist)
+- **Form Validation & Real-Time Error Feedback**: Immediate field validation preventing invalid submissions.
 
 ### 2.2 Signup System (`/signup`)
 - **Required Fields**:
-  - Full Name (&ge; 2 characters)
-  - Work Email Address (valid format)
-  - Password (&ge; 6 characters) with Show/Hide toggle
+  - Full Name (minimum 2 characters)
+  - Work Email Address (validated format)
+  - Password (minimum 6 characters) with Show/Hide toggle
   - Confirm Password (strict equality check)
-  - Role Selection Tier: Administrator, Team Manager, Operations Specialist
-- **Biometric Passkey Enrollment**: Direct WebAuthn registration during onboarding (`navigator.credentials.create`).
+  - Role Selection Tier: Administrator, Manager, or Employee
+- **Passkey Enrollment**: Direct WebAuthn registration during onboarding (`navigator.credentials.create`).
 
-### 2.3 Dedicated Logout Gateway (`/logout`)
-- Automatically clears session storage, active tokens, and biometric credentials upon entry.
-- Displays an empathetic session closure confirmation with `<HeartHandshake />` and `<ShieldCheck />`.
-- Quick action navigation to return to `/login` or register a new colleague via `/signup`.
+### 2.3 Direct Logout Redirection (`/logout`)
+- Automatically clears session storage, authorization tokens, and active credentials.
+- Directly and immediately redirects the user to `/login` (`navigate('/login', { replace: true })`).
+- Displays a clean toast notification: *"You have been signed out."* without showing any intermediate signed-out screen.
 
 ---
 
@@ -38,14 +38,14 @@ Module 1 provides a responsive, human-centered authentication gateway supporting
 ```
 src/
 ├── pages/auth/
-│   ├── Login.jsx           # Main login portal with Passkey & Password tabs
-│   ├── Signup.jsx          # Colleague registration with role cards
-│   └── Logout.jsx          # Empathetic session clearance and goodbye screen
+│   ├── Login.jsx           # Enterprise login portal (Password & Passkey tabs)
+│   ├── Signup.jsx          # User registration with role selection cards
+│   └── Logout.jsx          # Session termination & immediate redirect to /login
 ├── components/common/
-│   ├── BiometricModal.jsx  # Windows Hello & Touch ID hardware modal
+│   ├── BiometricModal.jsx  # Windows Hello & biometric hardware radar modal
 │   └── Input.jsx           # Reusable input with Show/Hide password toggle
 └── context/
-    └── AuthContext.jsx     # Pure React Context API authentication provider
+    └── AuthContext.jsx     # React Context API authentication provider
 ```
 
 ---
@@ -62,8 +62,7 @@ Authentication state is managed by `AuthContext.jsx` using `localStorage`:
   email: "admin@enterprise.com",
   role: "Admin",
   title: "Lead Executive Administrator",
-  department: "People Operations & Security",
-  avatar: "https://images.unsplash.com/...",
+  department: "Security & Administration",
   hasPasskey: true,
   passkeys: [
     {
@@ -80,11 +79,10 @@ Authentication state is managed by `AuthContext.jsx` using `localStorage`:
 ---
 
 ## 5. Step-by-Step Evaluation Guide
-1. Navigate to `/login`. Verify that inputs start with clean placeholders.
-2. Click **Sarah (Administrator)** chip below. Notice email and password populate automatically.
-3. Click the password eye icon to toggle visibility between `••••••••` and `Password123!`.
-4. Click **Sign In With Password**. Verify that user is redirected to `/dashboard`.
-5. Open profile dropdown in the top right and click **Sign Out of Session**.
-6. Verify redirection to `/logout` displaying *"Session Closed Safely"*.
-7. Click **Register New Colleague** to test `/signup`. Fill in name, email, password, confirm password, select role, and register.
-
+1. Navigate to `/login`. Verify the clean, professional corporate design with midnight glassmorphism.
+2. Click the **Admin (Sarah)** pre-fill chip. Email and password populate automatically.
+3. Click the password eye icon to toggle visibility between hidden and visible text.
+4. Click **Sign In With Password**. Verify immediate redirect to `/dashboard`.
+5. Open the profile menu in the header and click **Sign Out**.
+6. Verify direct redirection to `/login` with an informational toast notification.
+7. Click **Sign Up** to test `/signup`. Fill in name, email, password, confirm password, select a role tier, and register.

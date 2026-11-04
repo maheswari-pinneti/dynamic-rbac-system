@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  HeartHandshake,
   User,
-  UserPlus,
-  Fingerprint,
+  Lock,
+  Eye,
+  EyeOff,
   ScanFace,
-  Smile,
+  Fingerprint,
+  KeyRound,
   CheckCircle2,
   Sparkles,
   Crown,
   Briefcase,
   UserCheck,
   ShieldCheck,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { ROLES, ROLE_LIST } from '../../utils/constants';
+import { ROLES } from '../../utils/constants';
 import { registerNativePasskey, checkPasskeySupport } from '../../utils/passkey';
-
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
 import BiometricModal from '../../components/common/BiometricModal';
 import ThemeToggle from '../../components/common/ThemeToggle';
 
@@ -29,7 +28,8 @@ export const Signup = () => {
   const { success, error } = useToast();
   const navigate = useNavigate();
 
-  const [authMethod, setAuthMethod] = useState('passkey');
+  // Active Auth Tab: 'password' | 'passkey'
+  const [authMethod, setAuthMethod] = useState('password');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -39,9 +39,11 @@ export const Signup = () => {
     role: ROLES.EMPLOYEE,
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Biometric state
   const [isBiometricModalOpen, setIsBiometricModalOpen] = useState(false);
   const [passkeySupport, setPasskeySupport] = useState({
     supported: true,
@@ -58,19 +60,19 @@ export const Signup = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Please provide your full name';
+      newErrors.name = 'Full name is required';
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name should be at least 2 characters';
+      newErrors.name = 'At least 2 characters';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Please provide your work email address';
+      newErrors.email = 'Corporate email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please provide a valid email format';
+      newErrors.email = 'Valid email format required';
     }
 
     if (!formData.role) {
-      newErrors.role = 'Please select your role within the team';
+      newErrors.role = 'Please select a role tier';
     }
 
     return newErrors;
@@ -82,11 +84,11 @@ export const Signup = () => {
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Must be at least 6 characters';
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirmation password is required';
+      newErrors.confirmPassword = 'Confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
@@ -108,10 +110,7 @@ export const Signup = () => {
         role: formData.role,
       });
 
-      success(
-        `Welcome to the team, ${newUser.name}! Your account is ready.`,
-        'Welcome Aboard'
-      );
+      success(`Welcome to the team, ${newUser.name}! Your account is ready.`, 'Registered');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       error(err.message || 'Registration could not be completed.');
@@ -150,8 +149,8 @@ export const Signup = () => {
       });
 
       success(
-        `Biometric passkey enrolled with ${passkeyResult.authenticatorType || 'your device'}! Welcome, ${newUser.name}.`,
-        'Welcome to the Team'
+        `Biometric passkey linked with ${passkeyResult.authenticatorType || 'your device'}! Welcome, ${newUser.name}.`,
+        'Registered'
       );
       navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -165,89 +164,109 @@ export const Signup = () => {
     {
       role: ROLES.ADMIN,
       title: 'Administrator',
-      desc: 'Universal control over all modules & dynamic permissions',
       icon: Crown,
-      color: 'text-purple-600 dark:text-purple-400',
-      border: 'border-purple-300 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/40',
+      color: 'text-purple-400',
     },
     {
       role: ROLES.MANAGER,
-      title: 'Team Manager',
-      desc: 'Operational lead over catalog items and reports',
+      title: 'Manager',
       icon: Briefcase,
-      color: 'text-blue-600 dark:text-blue-400',
-      border: 'border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/40',
+      color: 'text-blue-400',
     },
     {
       role: ROLES.EMPLOYEE,
-      title: 'Operations Specialist',
-      desc: 'Front-line staff handling daily catalog inquiries',
+      title: 'Specialist',
       icon: UserCheck,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      border: 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/40',
+      color: 'text-emerald-400',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8 relative transition-colors duration-200">
-      {/* Background ambient lighting */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-500/10 via-transparent to-transparent pointer-events-none" />
+    <div className="min-h-screen bg-[#0a0f1d] text-white flex flex-col justify-center items-center py-10 px-4 relative overflow-hidden font-sans select-none">
+      {/* Brick Wall Background Pattern */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-25 pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern id="signup-brick-pattern" width="70" height="34" patternUnits="userSpaceOnUse">
+            <path
+              d="M 0 0 L 70 0 M 0 17 L 70 17 M 0 34 L 70 34 M 0 0 L 0 17 M 35 17 L 35 34 M 70 0 L 70 17"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.15)"
+              strokeWidth="1.2"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#signup-brick-pattern)" />
+      </svg>
 
-      {/* Floating Theme Toggle */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-2">
+      {/* Ambient gradient vignette */}
+      <div className="absolute inset-0 bg-radial from-transparent via-[#0a0f1d]/60 to-[#060a14] pointer-events-none" />
+
+      {/* Floating Theme Toggle (top right) */}
+      <div className="absolute top-4 right-4 z-30">
         <ThemeToggle size="md" />
       </div>
 
-      {/* Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-500 via-teal-500 to-amber-400 flex items-center justify-center text-slate-950 shadow-xl shadow-brand-500/20 mb-4 transform hover:scale-105 transition-transform">
-          <HeartHandshake className="w-8 h-8 text-slate-950" />
+      {/* Wall Lamp Fixture casting warm spotlight */}
+      <div className="relative z-20 flex flex-col items-center mb-[-12px]">
+        {/* Lamp Fixture Body */}
+        <div className="w-24 h-7 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-900 rounded-t-lg border-t border-slate-500 shadow-xl relative z-20 flex items-center justify-center">
+          <div className="w-12 h-1 bg-slate-500/50 rounded-full" />
         </div>
-        <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-          Join the PeopleRBAC Team
-        </h2>
-        <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-          Create your account with your <strong>Face, Fingerprint,</strong> or <strong>Password</strong>
-        </p>
+        {/* Lamp Bulb / Warm Light Emitter */}
+        <div className="w-20 h-2 bg-amber-100 rounded-b shadow-[0_0_45px_20px_rgba(253,224,71,0.55)] relative z-20" />
+        {/* Downward Conic Warm Light Cone */}
+        <div className="absolute top-5 w-[440px] h-[480px] bg-[radial-gradient(ellipse_at_top,_rgba(254,240,138,0.28)_0%,_rgba(251,191,36,0.14)_38%,_transparent_72%)] pointer-events-none z-10" />
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0 z-10">
-        <div className="bg-white dark:bg-slate-900 py-8 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-200/90 dark:border-slate-800 transition-colors">
-          {/* Method Selection Tabs */}
-          <div className="grid grid-cols-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-6 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setAuthMethod('passkey')}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
-                authMethod === 'passkey'
-                  ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-brand-300 shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <ScanFace className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-              <span>Register Passkey</span>
-            </button>
+      {/* Frosted Glassmorphism Card */}
+      <div className="relative z-20 w-full max-w-[390px] sm:max-w-[420px]">
+        <div className="backdrop-blur-xl bg-white/[0.08] dark:bg-slate-900/[0.45] border border-white/[0.22] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] rounded-[28px] p-7 sm:p-8 text-white relative overflow-hidden transition-all">
+          {/* Subtle card top glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-10 bg-amber-200/20 blur-xl pointer-events-none" />
 
+          {/* Heading */}
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-white tracking-wide mb-5">
+            Register
+          </h2>
+
+          {/* Auth Method Switcher Tabs (Password vs Passkey) */}
+          <div className="grid grid-cols-2 p-1 bg-white/[0.07] border border-white/10 rounded-2xl mb-4 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setAuthMethod('password')}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all ${
                 authMethod === 'password'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-white text-slate-950 font-bold shadow-md'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
-              <Fingerprint className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              <span>Register Password</span>
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Password</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAuthMethod('passkey')}
+              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all ${
+                authMethod === 'passkey'
+                  ? 'bg-white text-slate-950 font-bold shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <ScanFace className="w-3.5 h-3.5" />
+              <span>Passkey</span>
             </button>
           </div>
 
-          {/* Role Selection Cards Grid */}
-          <div className="mb-5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-              Select Your Team Role Tier *
-            </label>
-            <div className="space-y-2">
+          {/* Role Tier Selection */}
+          <div className="mb-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+              Select Your Role Tier
+            </span>
+            <div className="grid grid-cols-3 gap-1.5">
               {rolesConfig.map((item) => {
                 const isSelected = formData.role === item.role;
                 const RoleIcon = item.icon;
@@ -256,161 +275,229 @@ export const Signup = () => {
                     key={item.role}
                     type="button"
                     onClick={() => setFormData({ ...formData, role: item.role })}
-                    className={`w-full p-2.5 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                    className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center justify-center ${
                       isSelected
-                        ? `${item.border} ring-2 ring-brand-500/30`
-                        : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                        ? 'bg-white text-slate-950 font-bold border-white shadow-md'
+                        : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/15 text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1.5 rounded-xl bg-white dark:bg-slate-800 shadow-xs">
-                        <RoleIcon className={`w-4 h-4 ${item.color}`} />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white block leading-tight">
-                          {item.title}
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                          {item.desc}
-                        </span>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="w-4 h-4 text-brand-600 dark:text-brand-400 flex-shrink-0 ml-2" />
-                    )}
+                    <RoleIcon className={`w-3.5 h-3.5 mb-0.5 ${isSelected ? 'text-slate-950' : item.color}`} />
+                    <span className="text-[11px] font-semibold">{item.title}</span>
                   </button>
                 );
               })}
             </div>
             {errors.role && (
-              <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.role}</p>
+              <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.role}</p>
             )}
           </div>
 
-          {/* TAB 1: PASSKEY REGISTRATION FORM */}
-          {authMethod === 'passkey' && (
-            <form className="space-y-4 animate-in fade-in duration-200" onSubmit={handleStartPasskeySignup} noValidate>
-              <div className="p-3.5 rounded-2xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900/60 text-xs text-brand-900 dark:text-brand-200 flex items-start gap-2.5">
-                <Smile className="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold block">Biometric Enrollment</span>
-                  <span className="text-[11px] text-brand-700 dark:text-brand-300">
-                    Your Face or Fingerprint passkey will be securely registered to this device for instant future logins.
-                  </span>
+          {/* TAB 1: PASSWORD REGISTRATION */}
+          {authMethod === 'password' && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-3.5">
+              {/* Full Name */}
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (errors.name) setErrors({ ...errors, name: '' });
+                    }}
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-300">
+                    <User className="w-4 h-4" />
+                  </div>
                 </div>
+                {errors.name && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.name}</p>
+                )}
               </div>
 
-              <Input
-                label="Full Name *"
-                name="name"
-                type="text"
-                placeholder="e.g. Jordan Cooper"
-                icon={User}
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                error={errors.name}
-                required
-              />
+              {/* Corporate Email */}
+              <div>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Corporate Email"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: '' });
+                    }}
+                    autoComplete="username"
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-300">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.email}</p>
+                )}
+              </div>
 
-              <Input
-                label="Work Email Address *"
-                name="email"
-                type="email"
-                placeholder="jordan@enterprise.com"
-                icon={Smile}
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                error={errors.email}
-                required
-              />
+              {/* Password */}
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      if (errors.password) setErrors({ ...errors, password: '' });
+                    }}
+                    autoComplete="new-password"
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-300 hover:text-white transition-colors focus:outline-none"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.password}</p>
+                )}
+              </div>
 
-              <Button
+              {/* Confirm Password */}
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => {
+                      setFormData({ ...formData, confirmPassword: e.target.value });
+                      if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
+                    }}
+                    autoComplete="new-password"
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-300">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              {/* Big White Rounded Pill Submit Button */}
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full mt-2"
-                isLoading={isLoading}
-                icon={ScanFace}
+                disabled={isLoading}
+                className="w-full mt-2 bg-white hover:bg-slate-100 text-slate-950 font-extrabold py-3.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-[0.99] text-sm tracking-wide disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                Enroll & Link Passkey
-              </Button>
+                {isLoading ? <span>Registering...</span> : <span>Register</span>}
+              </button>
             </form>
           )}
 
-          {/* TAB 2: PASSWORD REGISTRATION FORM */}
-          {authMethod === 'password' && (
-            <form className="space-y-4 animate-in fade-in duration-200" onSubmit={handlePasswordSubmit} noValidate>
-              <Input
-                label="Full Name *"
-                name="name"
-                type="text"
-                placeholder="e.g. Jordan Cooper"
-                icon={User}
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                error={errors.name}
-                required
-              />
+          {/* TAB 2: PASSKEY ENROLLMENT */}
+          {authMethod === 'passkey' && (
+            <form onSubmit={handleStartPasskeySignup} className="space-y-3.5">
+              <div className="p-3.5 rounded-2xl bg-white/[0.06] border border-white/15 text-center">
+                <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white mx-auto mb-2 shadow-xs">
+                  <ScanFace className="w-5 h-5 animate-pulse" />
+                </div>
+                <h4 className="text-xs font-bold text-white">
+                  Biometric Passkey Registration
+                </h4>
+                <p className="text-[11px] text-slate-300 mt-0.5">
+                  Link your <strong>Windows Hello Face</strong> or <strong>Touch ID</strong> for passwordless access.
+                </p>
+              </div>
 
-              <Input
-                label="Work Email Address *"
-                name="email"
-                type="email"
-                placeholder="jordan@enterprise.com"
-                icon={Smile}
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                error={errors.email}
-                required
-              />
+              {/* Full Name */}
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (errors.name) setErrors({ ...errors, name: '' });
+                    }}
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-300">
+                    <User className="w-4 h-4" />
+                  </div>
+                </div>
+                {errors.name && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.name}</p>
+                )}
+              </div>
 
-              <Input
-                label="Password *"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                icon={Fingerprint}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                error={errors.password}
-                helperText="Must be at least 6 characters"
-                required
-              />
+              {/* Corporate Email */}
+              <div>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Corporate Email"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: '' });
+                    }}
+                    autoComplete="username webauthn"
+                    className="w-full bg-white/[0.08] border border-white/20 focus:border-white focus:bg-white/[0.12] focus:ring-2 focus:ring-white/20 rounded-2xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-slate-300/70 outline-none transition-all shadow-inner"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-300">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-xs text-rose-300 font-medium pl-1">{errors.email}</p>
+                )}
+              </div>
 
-              <Input
-                label="Confirm Password *"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                icon={Fingerprint}
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                error={errors.confirmPassword}
-                required
-              />
-
-              <Button
+              {/* Big White Rounded Pill Passkey Button */}
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full mt-2"
-                isLoading={isLoading}
-                icon={UserPlus}
+                disabled={isLoading}
+                className="w-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold py-3.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-[0.99] text-sm tracking-wide flex items-center justify-center gap-2"
               >
-                Create Account
-              </Button>
+                <ScanFace className="w-4 h-4 text-slate-950" />
+                <span>Enroll & Register Passkey</span>
+              </button>
+
+              <div className="flex items-center justify-center gap-3 pt-1 text-[11px] text-slate-300">
+                <span className="flex items-center gap-1">
+                  <ScanFace className="w-3.5 h-3.5" /> Face ID
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Fingerprint className="w-3.5 h-3.5" /> Fingerprint Touch
+                </span>
+              </div>
             </form>
           )}
 
-          <div className="mt-6 text-center text-xs text-slate-600 dark:text-slate-400">
-            Already registered?{' '}
+          {/* Footer Link: Already have an account? Login */}
+          <div className="mt-5 text-center text-xs text-slate-300">
+            Already have an account?{' '}
             <Link
               to="/login"
-              className="font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 inline-flex items-center gap-1 ml-1"
+              className="text-white font-bold hover:underline ml-1 inline-flex items-center"
             >
-              Sign in to your account <Sparkles className="w-3 h-3 text-amber-500" />
+              Login
             </Link>
           </div>
         </div>
@@ -422,7 +509,7 @@ export const Signup = () => {
         onClose={() => setIsBiometricModalOpen(false)}
         onSuccess={handlePasskeySuccess}
         mode="register"
-        userName={formData.name || formData.email || 'Colleague'}
+        userName={formData.name || formData.email || 'User'}
         isNativeAvailable={passkeySupport.supported}
         onTriggerNative={handleExecuteNativeRegistration}
       />

@@ -25,11 +25,18 @@ export const AuthProvider = ({ children }) => {
     }));
   });
 
-  // Current authenticated user (default to Sarah Connor Admin for instant exploration)
+  // Current authenticated user (null by default so login page is displayed first)
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = storage.get(STORAGE_KEYS.CURRENT_USER, null);
-    if (saved) return saved;
-    return users[0];
+    try {
+      const sessionActive = sessionStorage.getItem('rbac_session_active');
+      if (sessionActive === 'true') {
+        const saved = storage.get(STORAGE_KEYS.CURRENT_USER, null);
+        if (saved) return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
   });
 
   // Login history tracking (Module 2: "Recent Login History")
@@ -93,8 +100,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (currentUser) {
       storage.set(STORAGE_KEYS.CURRENT_USER, currentUser);
+      try {
+        sessionStorage.setItem('rbac_session_active', 'true');
+      } catch {
+        // ignore
+      }
     } else {
       storage.remove(STORAGE_KEYS.CURRENT_USER);
+      try {
+        sessionStorage.removeItem('rbac_session_active');
+      } catch {
+        // ignore
+      }
     }
   }, [currentUser]);
 
@@ -119,23 +136,41 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Helper to find a user by email, name, first name, or role keyword
+   */
+  const findUser = useCallback(
+    (query) => {
+      if (!query || typeof query !== 'string') return null;
+      const q = query.toLowerCase().trim();
+      return users.find(
+        (u) =>
+          u.email.toLowerCase().trim() === q ||
+          u.name.toLowerCase().trim() === q ||
+          u.name.toLowerCase().split(' ')[0] === q ||
+          (q === 'admin' && u.role === ROLES.ADMIN) ||
+          (q === 'manager' && u.role === ROLES.MANAGER) ||
+          (q === 'employee' && u.role === ROLES.EMPLOYEE)
+      );
+    },
+    [users]
+  );
+
+  /**
    * Password Login handler
    */
   const login = useCallback(
-    async (email, password) => {
+    async (emailOrUsername, password) => {
       await new Promise((r) => setTimeout(r, 350));
 
-      const found = users.find(
-        (u) => u.email.toLowerCase().trim() === email.toLowerCase().trim()
-      );
+      const found = findUser(emailOrUsername);
 
       if (!found) {
-        recordLoginAttempt('Unknown', email, 'Unknown', 'Failed (Account Not Found)', 'Password');
-        throw new Error('No account found with this email address.');
+        recordLoginAttempt('Unknown', emailOrUsername, 'Unknown', 'Failed (Account Not Found)', 'Password');
+        throw new Error('No account found with this username or email.');
       }
 
       if (found.password !== password) {
-        recordLoginAttempt(found.name, email, found.role, 'Failed (Incorrect Password)', 'Password');
+        recordLoginAttempt(found.name, found.email, found.role, 'Failed (Incorrect Password)', 'Password');
         throw new Error('Invalid password provided. Please verify credentials.');
       }
 
@@ -143,21 +178,19 @@ export const AuthProvider = ({ children }) => {
       recordLoginAttempt(found.name, found.email, found.role, 'Success', 'Password');
       return found;
     },
-    [users]
+    [findUser]
   );
 
   /**
    * Passkey / Windows Hello / Fingerprint Login handler
    */
   const loginWithPasskey = useCallback(
-    async (email, passkeyResult = {}) => {
+    async (emailOrUsername, passkeyResult = {}) => {
       await new Promise((r) => setTimeout(r, 300));
 
       let matchedUser = null;
-      if (email && email.trim()) {
-        matchedUser = users.find(
-          (u) => u.email.toLowerCase().trim() === email.toLowerCase().trim()
-        );
+      if (emailOrUsername && emailOrUsername.trim()) {
+        matchedUser = findUser(emailOrUsername);
       } else {
         // Discoverable flow: find by credential ID or fallback to current/admin user
         matchedUser =
@@ -167,7 +200,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (!matchedUser) {
-        recordLoginAttempt('Unknown', email || 'Passkey User', 'Unknown', 'Failed (No User Found)', 'Passkey');
+        recordLoginAttempt('Unknown', emailOrUsername || 'Passkey User', 'Unknown', 'Failed (No User Found)', 'Passkey');
         throw new Error('No matching user account found for this passkey.');
       }
 
@@ -178,7 +211,7 @@ export const AuthProvider = ({ children }) => {
       recordLoginAttempt(matchedUser.name, matchedUser.email, matchedUser.role, 'Success (Passkey)', methodLabel);
       return matchedUser;
     },
-    [users]
+    [users, findUser]
   );
 
   /**
@@ -273,6 +306,11 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     setCurrentUser(null);
     storage.remove(STORAGE_KEYS.CURRENT_USER);
+    try {
+      sessionStorage.removeItem('rbac_session_active');
+    } catch {
+      // ignore
+    }
   }, []);
 
   /**
@@ -298,7 +336,7 @@ export const AuthProvider = ({ children }) => {
   );
 
   /**
-   * Update a colleague's role (Admin Role Management)
+   * Update a user's role (Admin Role Management)
    */
   const updateUserRole = useCallback((userId, newRole) => {
     setUsers((all) =>
@@ -319,7 +357,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
-   * Add a new colleague user (Admin User CRUD)
+   * Add a new user (Admin User CRUD)
    */
   const addUser = useCallback(({ name, email, role, department, title }) => {
     const newUser = {
@@ -341,7 +379,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
-   * Remove a colleague user (Admin User CRUD)
+   * Remove a user (Admin User CRUD)
    */
   const deleteUser = useCallback((userId) => {
     setUsers((prev) => prev.filter((u) => u.id !== userId));
