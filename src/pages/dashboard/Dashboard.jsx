@@ -51,9 +51,10 @@ import { useTheme } from '../../context/ThemeContext';
 import { ROLES } from '../../utils/constants';
 import { formatCurrency, formatNumber, timeAgo } from '../../utils/formatters';
 import ChartPreviewModal from '../../components/common/ChartPreviewModal';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 
 export const Dashboard = () => {
-  const { allProducts } = useProduct();
+  const { allProducts, loading } = useProduct();
   const { currentUser, users, loginHistory } = useAuth();
   const { activityLogs } = usePermission();
   const { isDark } = useTheme();
@@ -637,6 +638,10 @@ export const Dashboard = () => {
 
   const currentRoleMeta = roleMetadata[userRole] || roleMetadata[ROLES.ADMIN];
   const RoleIcon = currentRoleMeta.icon;
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-5">

@@ -20,9 +20,10 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import ProductDetailModal from '../products/ProductDetailModal';
+import { TableSkeleton, CardSkeleton } from '../../components/common/Skeleton';
 
 export const Reports = () => {
-  const { allProducts, analyticsData } = useProduct();
+  const { allProducts, analyticsData, loading } = useProduct();
   const { currentUser } = useAuth();
   const { success } = useToast();
 
@@ -74,6 +75,28 @@ export const Reports = () => {
     (acc, p) => acc + (p.price || 0) * (p.stock || 0),
     0
   );
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded-md" />
+            <div className="h-4 w-72 bg-slate-200 dark:bg-slate-800 rounded-md" />
+          </div>
+          <div className="h-9 w-40 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-xs">
+          <TableSkeleton rows={6} cols={5} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

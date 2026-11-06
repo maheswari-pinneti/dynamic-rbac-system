@@ -33,9 +33,10 @@ import PageHeader from '../../components/common/PageHeader';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import ChartPreviewModal from '../../components/common/ChartPreviewModal';
+import { AnalyticsSkeleton } from '../../components/common/Skeleton';
 
 export const Analytics = () => {
-  const { allProducts } = useProduct();
+  const { allProducts, loading } = useProduct();
   const { currentUser, users } = useAuth();
   const { isDark } = useTheme();
   const [timeRange, setTimeRange] = useState('30d');
@@ -195,6 +196,10 @@ export const Analytics = () => {
     }
     return null;
   };
+
+  if (loading) {
+    return <AnalyticsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

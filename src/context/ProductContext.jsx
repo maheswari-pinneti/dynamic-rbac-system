@@ -31,7 +31,7 @@ export const ProductProvider = ({ children }) => {
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [categories, setCategories] = useState([]);
   const [totalApiRecords, setTotalApiRecords] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Pagination, Search, Filter & Sort State
@@ -93,10 +93,13 @@ export const ProductProvider = ({ children }) => {
     };
   }, []);
 
-  // Fetch products from API with seamless offline resilience
+  // Fetch products from API with seamless offline resilience and guaranteed 3s skeleton loader
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const startTime = Date.now();
+    const MIN_SKELETON_TIME = 3000; // 3 seconds skeleton loader
+
     try {
       let data;
       // If searching, use search endpoint
@@ -146,6 +149,12 @@ export const ProductProvider = ({ children }) => {
       // Clear blocking error so the catalog UI is fully interactive
       setError(null);
     } finally {
+      // Ensure skeleton loader is smoothly presented up to 3 seconds
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, MIN_SKELETON_TIME - elapsed);
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+      }
       setLoading(false);
     }
   }, [searchTerm, selectedCategory]);
