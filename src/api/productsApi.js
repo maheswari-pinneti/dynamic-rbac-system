@@ -9,6 +9,7 @@ export const productsApi = {
     if (sortBy) {
       url += `&sortBy=${sortBy}&order=${order}`;
     }
+    url += (url.includes('?') ? '&' : '?') + `_t=${Date.now()}`;
     const response = await apiClient.get(url);
     return response.data;
   },
@@ -17,7 +18,7 @@ export const productsApi = {
    * Search products by keyword
    */
   searchProducts: async (query, { limit = 10, skip = 0 } = {}) => {
-    const response = await apiClient.get(`/products/search?q=${encodeURIComponent(query)}&limit=${limit}&skip=${skip}`);
+    const response = await apiClient.get(`/products/search?q=${encodeURIComponent(query)}&limit=${limit}&skip=${skip}&_t=${Date.now()}`);
     return response.data;
   },
 
@@ -25,7 +26,7 @@ export const productsApi = {
    * Fetch products by category
    */
   getProductsByCategory: async (category, { limit = 10, skip = 0 } = {}) => {
-    const response = await apiClient.get(`/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}`);
+    const response = await apiClient.get(`/products/category/${encodeURIComponent(category)}?limit=${limit}&skip=${skip}&_t=${Date.now()}`);
     return response.data;
   },
 
@@ -33,7 +34,7 @@ export const productsApi = {
    * Fetch all category names
    */
   getCategories: async () => {
-    const response = await apiClient.get('/products/categories');
+    const response = await apiClient.get(`/products/categories?_t=${Date.now()}`);
     // DummyJSON returns array of strings or objects {slug, name, url}
     return response.data.map((cat) => (typeof cat === 'object' ? cat.slug || cat.name : cat));
   },

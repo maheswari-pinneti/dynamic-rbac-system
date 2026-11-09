@@ -43,6 +43,9 @@ import {
   PackageCheck,
   ClipboardList,
   Maximize2,
+  ArrowUpRight,
+  ArrowDownRight,
+  TrendingDown,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProduct } from '../../context/ProductContext';
@@ -52,6 +55,32 @@ import { ROLES } from '../../utils/constants';
 import { formatCurrency, formatNumber, timeAgo } from '../../utils/formatters';
 import ChartPreviewModal from '../../components/common/ChartPreviewModal';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
+
+
+// Micro-Sparkline generator inspired by SimpleKPI & Aceternity UI
+const renderSparkline = (type = 'up', color = '#10b981') => {
+  const isUp = type === 'up';
+  const strokeColor = isUp ? '#10b981' : '#f59e0b';
+  const pathD = isUp
+    ? 'M0,22 Q30,16 60,19 T120,11 T160,13 T200,4'
+    : 'M0,6 Q30,10 60,8 T120,17 T160,15 T200,24';
+  const fillD = isUp
+    ? 'M0,22 Q30,16 60,19 T120,11 T160,13 T200,4 L200,28 L0,28 Z'
+    : 'M0,6 Q30,10 60,8 T120,17 T160,15 T200,24 L200,28 L0,28 Z';
+
+  return (
+    <svg className="w-full h-7 overflow-visible opacity-75 group-hover:opacity-100 transition-opacity" viewBox="0 0 200 28" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`spark-${type}-${strokeColor.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d={fillD} fill={`url(#spark-${type}-${strokeColor.replace('#', '')})`} />
+      <path d={pathD} fill="none" stroke={strokeColor} strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+};
 
 export const Dashboard = () => {
   const { allProducts, loading } = useProduct();
@@ -380,12 +409,15 @@ export const Dashboard = () => {
   const adminKpiCards = [
     {
       id: 'total-records',
-      label: 'Total Records',
+      label: 'Total Catalog Records',
       value: `${totalRecords} Items`,
-      trend: '12.8%',
-      trendText: 'vs Last Month',
+      trend: '+12.8%',
+      trendType: 'up',
+      trendText: 'vs last month',
       icon: Boxes,
-      gradient: 'from-[#6366f1] via-[#7c3aed] to-[#8b5cf6]',
+      iconColor: 'from-blue-600 to-indigo-600',
+      iconShadow: 'shadow-blue-500/25',
+      badge: 'Inventory',
       description: 'Total active catalog merchandise managed and curated across the enterprise repository.',
       metrics: [
         { label: 'REST API Source', value: 'DummyJSON API' },
@@ -396,12 +428,15 @@ export const Dashboard = () => {
     },
     {
       id: 'active-records',
-      label: 'Total Active Records',
+      label: 'Dispatch Ready Stock',
       value: `${totalActiveRecords} In-Stock`,
-      trend: '18.6%',
-      trendText: 'Dispatch Ready',
+      trend: '98.4% SLA',
+      trendType: 'up',
+      trendText: 'Safe buffer (>10)',
       icon: CheckCircle2,
-      gradient: 'from-[#059669] via-[#10b981] to-[#34d399]',
+      iconColor: 'from-emerald-500 to-teal-600',
+      iconShadow: 'shadow-emerald-500/25',
+      badge: 'Fulfillment',
       description: 'Catalog products maintaining safe inventory buffers (>10 units) available for immediate shipment.',
       metrics: [
         { label: 'Dispatch Buffer', value: '> 10 Safe Units' },
@@ -412,12 +447,15 @@ export const Dashboard = () => {
     },
     {
       id: 'inactive-records',
-      label: 'Total Inactive Records',
+      label: 'Restock Required',
       value: `${totalInactiveRecords} Low Stock`,
-      trend: '10.4%',
-      trendText: 'Restock Priority',
+      trend: '4 Outages',
+      trendType: 'down',
+      trendText: 'Reorder priority',
       icon: AlertTriangle,
-      gradient: 'from-[#f59e0b] via-[#f97316] to-[#ea580c]',
+      iconColor: 'from-amber-500 to-orange-600',
+      iconShadow: 'shadow-amber-500/25',
+      badge: 'Attention',
       description: 'Products that have fallen below safety inventory buffers (≤10 units) requiring purchase reorders.',
       metrics: [
         { label: 'Critical Outages', value: '4 Zero Stock' },
@@ -427,13 +465,35 @@ export const Dashboard = () => {
       ],
     },
     {
+      id: 'total-valuation',
+      label: 'Catalog Valuation',
+      value: '₹1,48,250',
+      trend: '+15.2%',
+      trendType: 'up',
+      trendText: 'Net asset volume',
+      icon: TrendingUp,
+      iconColor: 'from-violet-600 to-purple-600',
+      iconShadow: 'shadow-purple-500/25',
+      badge: 'Financial',
+      description: 'Aggregated net inventory asset valuation calculated in Indian Rupees across warehouse tiers.',
+      metrics: [
+        { label: 'Gross Value', value: '₹1,48,250.00' },
+        { label: 'Average Unit Value', value: '₹764.00' },
+        { label: 'Currency', value: 'INR (₹)' },
+        { label: 'Audit Status', value: 'Balanced & Reconciled' },
+      ],
+    },
+    {
       id: 'total-managers',
-      label: 'Total Managers',
-      value: `${totalManagers} Managers`,
-      trend: 'Team Leads',
-      trendText: 'Department Leads',
+      label: 'Supervisory Managers',
+      value: `${totalManagers} Active`,
+      trend: '4 Leads',
+      trendType: 'up',
+      trendText: 'RBAC verified',
       icon: Users,
-      gradient: 'from-[#2563eb] via-[#0284c7] to-[#0ea5e9]',
+      iconColor: 'from-sky-500 to-blue-600',
+      iconShadow: 'shadow-sky-500/25',
+      badge: 'Supervisory',
       description: 'Supervisory managers with catalog editing, analytics review, and report generation authority.',
       metrics: [
         { label: 'Assigned Supervisors', value: 'Product & Logistics' },
@@ -444,66 +504,59 @@ export const Dashboard = () => {
     },
     {
       id: 'total-employees',
-      label: 'Total Employees',
-      value: `${totalEmployees} Specialists`,
-      trend: 'Operations',
-      trendText: 'Fulfillment Staff',
+      label: 'Team Specialists',
+      value: `${totalEmployees} Active`,
+      trend: '12 Staff',
+      trendType: 'up',
+      trendText: 'Floor specialists',
       icon: UserCheck,
-      gradient: 'from-[#db2777] via-[#ec4899] to-[#f43f5e]',
-      description: 'Frontline operations staff coordinating day-to-day catalog updates and customer fulfillment.',
+      iconColor: 'from-indigo-500 to-violet-600',
+      iconShadow: 'shadow-indigo-500/25',
+      badge: 'Operations',
+      description: 'Frontline employees authorized for catalog inspection, item verification, and profile management.',
       metrics: [
-        { label: 'Daily Entries', value: '64 Updates' },
-        { label: 'Active Curators', value: '12 Specialists' },
-        { label: 'Passkey Enrolled', value: '100% Biometrics' },
-        { label: 'Role Governance', value: 'Employee Tier' },
+        { label: 'Staff Count', value: '12 Floor Specialists' },
+        { label: 'Catalog Views', value: '184 Read Ops' },
+        { label: 'Write Access', value: 'Restricted by Policy' },
+        { label: 'MFA Passkeys', value: '100% Enrolled' },
       ],
     },
     {
       id: 'total-roles',
-      label: 'Total Roles',
-      value: `${totalRoles} RBAC Roles`,
-      trend: 'Active',
-      trendText: 'Admin • Mgr • Emp',
+      label: 'Dynamic Roles',
+      value: `${totalRoles} RBAC Tiers`,
+      trend: 'Live Matrix',
+      trendType: 'up',
+      trendText: 'Runtime enforced',
       icon: ShieldCheck,
-      gradient: 'from-[#7c3aed] via-[#8b5cf6] to-[#a855f7]',
-      description: 'Three-tiered Dynamic Role-Based Access Control matrix configured and enforced at runtime.',
+      iconColor: 'from-purple-500 to-pink-600',
+      iconShadow: 'shadow-purple-500/25',
+      badge: 'Security',
+      description: 'Configurable RBAC authorization tiers governing access across all application modules.',
       metrics: [
-        { label: 'Super Admin', value: 'Full Governance' },
-        { label: 'Manager Tier', value: 'Operational Access' },
-        { label: 'Employee Tier', value: 'Task Bound' },
-        { label: 'Permission Engine', value: 'Dynamic Matrix' },
+        { label: 'Role Types', value: 'Admin, Manager, Employee' },
+        { label: 'Admin Toggles', value: '6 Feature Gates' },
+        { label: 'Policy Sync', value: 'Zero Source Edits' },
+        { label: 'Enforcement', value: 'Route & Component' },
       ],
     },
     {
       id: 'recent-activities',
-      label: 'Recent Activities',
-      value: `${recentActivitiesCount} Operations`,
-      trend: 'Live Trail',
-      trendText: 'Audit Log Active',
-      icon: Sparkles,
-      gradient: 'from-[#0d9488] via-[#14b8a6] to-[#06b6d4]',
-      description: 'Every CRUD operation, permission update, and authentication event stamped with identity & timestamp.',
+      label: 'Security Audit Log',
+      value: `${recentActivitiesCount} Events`,
+      trend: '+24 Today',
+      trendType: 'up',
+      trendText: 'Tamper-proof',
+      icon: Activity,
+      iconColor: 'from-pink-500 to-rose-600',
+      iconShadow: 'shadow-pink-500/25',
+      badge: 'Audit Trail',
+      description: 'Audit log entries capturing administrative permission adjustments, logins, and inventory operations.',
       metrics: [
-        { label: 'CRUD Dispatches', value: '142 Calls' },
-        { label: 'Security Logins', value: '38 Sessions' },
-        { label: 'Permission Changes', value: 'Real-Time Immediate' },
-        { label: 'Compliance Audit', value: '100% Captured' },
-      ],
-    },
-    {
-      id: 'new-records',
-      label: 'New Records (Month)',
-      value: `${newRecordsThisMonth} Additions`,
-      trend: '18.2%',
-      trendText: 'Catalog Growth',
-      icon: ShoppingBag,
-      gradient: 'from-[#3b82f6] via-[#6366f1] to-[#8b5cf6]',
-      description: 'Newly introduced merchandise added to our central enterprise catalog this monthly cycle.',
-      metrics: [
-        { label: 'Top Growth Sector', value: 'Smart Home & Tech' },
-        { label: 'Average Price', value: '₹84.50' },
-        { label: 'Average Rating', value: '4.7 ★ / 5.0' },
-        { label: 'Review Status', value: 'Approved & Listed' },
+        { label: 'Audit Log Size', value: `${recentActivitiesCount} Total Records` },
+        { label: 'Today\'s Activity', value: '24 Operations' },
+        { label: 'Admin Overrides', value: '3 Policy Adjustments' },
+        { label: 'Storage Mode', value: 'Encrypted Local Persistence' },
       ],
     },
   ];
@@ -516,49 +569,67 @@ export const Dashboard = () => {
       label: 'Catalog Items',
       value: `${totalRecords} Items`,
       trend: '+12.8%',
+      trendType: 'up',
       trendText: 'In Central Catalog',
       icon: Boxes,
-      gradient: 'from-[#2563eb] to-[#3b82f6]',
+      iconColor: 'from-blue-600 to-indigo-600',
+      iconShadow: 'shadow-blue-500/25',
+      badge: 'Catalog',
     },
     {
       label: 'Safe In-Stock Stock',
       value: `${totalActiveRecords} Units`,
       trend: '98.4%',
+      trendType: 'up',
       trendText: 'Fulfillment Ready',
       icon: CheckCircle2,
-      gradient: 'from-[#059669] to-[#10b981]',
+      iconColor: 'from-emerald-500 to-teal-600',
+      iconShadow: 'shadow-emerald-500/25',
+      badge: 'Fulfillment',
     },
     {
       label: 'Restock Alerts',
       value: `${totalInactiveRecords} Items`,
       trend: 'Action Required',
+      trendType: 'down',
       trendText: 'Low Stock Buffer',
       icon: AlertTriangle,
-      gradient: 'from-[#ea580c] to-[#f97316]',
+      iconColor: 'from-amber-500 to-orange-600',
+      iconShadow: 'shadow-amber-500/25',
+      badge: 'Attention',
     },
     {
       label: 'Team Specialists',
       value: `${totalEmployees} Active`,
       trend: 'Staff',
+      trendType: 'up',
       trendText: 'Operations Staff',
       icon: Users,
-      gradient: 'from-[#7c3aed] to-[#8b5cf6]',
+      iconColor: 'from-purple-500 to-indigo-600',
+      iconShadow: 'shadow-purple-500/25',
+      badge: 'Staff',
     },
     {
       label: 'Monthly Growth',
       value: `+${newRecordsThisMonth} Added`,
       trend: '+18.2%',
+      trendType: 'up',
       trendText: 'New Catalog SKUs',
       icon: TrendingUp,
-      gradient: 'from-[#0d9488] to-[#14b8a6]',
+      iconColor: 'from-teal-500 to-cyan-600',
+      iconShadow: 'shadow-teal-500/25',
+      badge: 'Velocity',
     },
     {
       label: 'Team Operations',
       value: `${recentActivitiesCount} Today`,
       trend: 'Active',
+      trendType: 'up',
       trendText: 'Dispatched Tasks',
       icon: Activity,
-      gradient: 'from-[#db2777] to-[#ec4899]',
+      iconColor: 'from-pink-500 to-rose-600',
+      iconShadow: 'shadow-pink-500/25',
+      badge: 'Activity',
     },
   ];
 
@@ -677,7 +748,7 @@ export const Dashboard = () => {
       {userRole === ROLES.ADMIN && (
         <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
           {/* Admin 8 Summary KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {adminKpiCards.map((card) => {
               const Icon = card.icon;
               const isSelected = selectedKpi === card.id;
@@ -686,50 +757,58 @@ export const Dashboard = () => {
                 <div
                   key={card.id}
                   onClick={() => handleCardClick(card)}
-                  className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${card.gradient} p-3.5 text-white shadow-md transition-all duration-200 cursor-pointer group hover:scale-[1.02] hover:shadow-lg ${
+                  className={`group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0c1427] border p-4 transition-all duration-300 cursor-pointer ${
                     isSelected
-                      ? 'ring-4 ring-white/90 dark:ring-blue-400 scale-[1.02]'
+                      ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-xl shadow-blue-500/10 scale-[1.01]'
                       : selectedKpi
-                      ? 'opacity-65 hover:opacity-100'
-                      : ''
+                      ? 'border-slate-200/90 dark:border-slate-800/80 opacity-60 hover:opacity-100 hover:border-blue-500/40'
+                      : 'border-slate-200/90 dark:border-slate-800/80 hover:border-blue-500/40 hover:shadow-xl dark:hover:shadow-blue-950/20 shadow-2xs hover:-translate-y-0.5'
                   }`}
                 >
-                  <svg
-                    className="absolute bottom-0 left-0 right-0 w-full h-10 opacity-30 pointer-events-none"
-                    viewBox="0 0 200 60"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0,45 Q30,20 60,35 T120,25 T180,40 T200,30 L200,60 L0,60 Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M0,45 Q30,20 60,35 T120,25 T180,40 T200,30"
-                      fill="none"
-                      stroke="rgba(255,255,255,0.7)"
-                      strokeWidth="2.5"
-                    />
-                  </svg>
+                  {/* Subtle ambient luminous aura (Aceternity style) */}
+                  <div className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-br ${card.iconColor} opacity-5 group-hover:opacity-15 rounded-full blur-2xl pointer-events-none transition-opacity`} />
 
-                  <div className="flex items-start justify-between relative z-10">
-                    <span className="text-[11px] font-bold text-white/90 tracking-tight leading-tight truncate">
-                      {card.label}
+                  {/* Header: Icon + Title + Trend Badge */}
+                  <div className="flex items-start justify-between relative z-10 gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.iconColor} text-white flex items-center justify-center flex-shrink-0 shadow-md ${card.iconShadow} group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block truncate leading-tight">
+                          {card.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block truncate">
+                          {card.badge}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Trend Pill Badge */}
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 flex items-center gap-0.5 ${
+                      card.trendType === 'up'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                    }`}>
+                      {card.trend}
                     </span>
-                    <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">
-                      <Icon className="w-3.5 h-3.5 text-white" />
+                  </div>
+
+                  {/* Big Metric Value */}
+                  <div className="mt-3 relative z-10 flex items-baseline justify-between">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                        {card.value}
+                      </h3>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        {card.trendText}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="mt-2 relative z-10">
-                    <h3 className="text-base sm:text-lg font-extrabold tracking-tight truncate leading-tight">
-                      {card.value}
-                    </h3>
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-white/90">
-                      <span className="inline-flex items-center gap-0.5 bg-black/15 px-1 py-0.2 rounded text-[9px]">
-                        ▲ {card.trend}
-                      </span>
-                      <span className="text-[9px] text-white/80 truncate">{card.trendText}</span>
-                    </div>
+                  {/* Micro Sparkline Chart (SimpleKPI style) */}
+                  <div className="mt-2 pt-1 border-t border-slate-100 dark:border-slate-800/60 relative z-10">
+                    {renderSparkline(card.trendType, card.trendType === 'up' ? '#10b981' : '#f59e0b')}
                   </div>
                 </div>
               );
@@ -1229,28 +1308,51 @@ export const Dashboard = () => {
       {userRole === ROLES.MANAGER && (
         <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
           {/* Manager 6 Operational KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {managerKpiCards.map((card, idx) => {
               const Icon = card.icon;
               return (
                 <div
                   key={idx}
-                  className={`rounded-2xl bg-gradient-to-r ${card.gradient} p-4 text-white shadow-md`}
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0c1427] border border-slate-200/90 dark:border-slate-800/80 p-4 transition-all duration-300 hover:border-blue-500/40 hover:shadow-xl dark:hover:shadow-blue-950/20 shadow-2xs hover:-translate-y-0.5"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white/90 truncate">
-                      {card.label}
-                    </span>
-                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Icon className="w-3.5 h-3.5 text-white" />
+                  <div className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-br ${card.iconColor} opacity-5 group-hover:opacity-15 rounded-full blur-2xl pointer-events-none transition-opacity`} />
+
+                  <div className="flex items-start justify-between relative z-10 gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.iconColor} text-white flex items-center justify-center flex-shrink-0 shadow-md ${card.iconShadow} group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block truncate leading-tight">
+                          {card.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block truncate">
+                          {card.badge}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="text-lg font-black mt-2 truncate">{card.value}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-[10px] text-white/90">
-                    <span className="bg-black/20 px-1 py-0.2 rounded font-bold">
+
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 flex items-center gap-0.5 ${
+                      card.trendType === 'up'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                    }`}>
                       {card.trend}
                     </span>
-                    <span className="truncate opacity-80">{card.trendText}</span>
+                  </div>
+
+                  <div className="mt-3 relative z-10">
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                      {card.value}
+                    </h3>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {card.trendText}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 pt-1 border-t border-slate-100 dark:border-slate-800/60 relative z-10">
+                    {renderSparkline(card.trendType, card.trendType === 'up' ? '#10b981' : '#f59e0b')}
                   </div>
                 </div>
               );
@@ -1470,22 +1572,45 @@ export const Dashboard = () => {
               return (
                 <div
                   key={idx}
-                  className={`rounded-2xl bg-gradient-to-r ${card.gradient} p-4 text-white shadow-md`}
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0c1427] border border-slate-200/90 dark:border-slate-800/80 p-4 transition-all duration-300 hover:border-blue-500/40 hover:shadow-xl dark:hover:shadow-blue-950/20 shadow-2xs hover:-translate-y-0.5"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white/90 truncate">
-                      {card.label}
-                    </span>
-                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Icon className="w-3.5 h-3.5 text-white" />
+                  <div className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-br ${card.iconColor} opacity-5 group-hover:opacity-15 rounded-full blur-2xl pointer-events-none transition-opacity`} />
+
+                  <div className="flex items-start justify-between relative z-10 gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.iconColor} text-white flex items-center justify-center flex-shrink-0 shadow-md ${card.iconShadow} group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block truncate leading-tight">
+                          {card.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block truncate">
+                          {card.badge}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="text-lg font-black mt-2 truncate">{card.value}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-[10px] text-white/90">
-                    <span className="bg-black/20 px-1 py-0.2 rounded font-bold">
+
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 flex items-center gap-0.5 ${
+                      card.trendType === 'up'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                    }`}>
                       {card.trend}
                     </span>
-                    <span className="truncate opacity-80">{card.trendText}</span>
+                  </div>
+
+                  <div className="mt-3 relative z-10">
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                      {card.value}
+                    </h3>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {card.trendText}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 pt-1 border-t border-slate-100 dark:border-slate-800/60 relative z-10">
+                    {renderSparkline(card.trendType, card.trendType === 'up' ? '#10b981' : '#f59e0b')}
                   </div>
                 </div>
               );
