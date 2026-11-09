@@ -52,7 +52,7 @@ import { useProduct } from '../../context/ProductContext';
 import { usePermission } from '../../context/PermissionContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ROLES } from '../../utils/constants';
-import { formatCurrency, formatNumber, timeAgo } from '../../utils/formatters';
+import { formatCurrency, formatNumber, timeAgo, getHumanGreeting } from '../../utils/formatters';
 import ChartPreviewModal from '../../components/common/ChartPreviewModal';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
 
@@ -727,7 +727,7 @@ export const Dashboard = () => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-tight">
-                {currentRoleMeta.title}
+                {getHumanGreeting()}, {currentUser?.name?.split(' ')[0] || 'Team Lead'}! — {currentRoleMeta.title}
               </h2>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${currentRoleMeta.badge}`}>
                 {userRole} Tier
@@ -739,7 +739,10 @@ export const Dashboard = () => {
           </div>
         </div>
 
-
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>RBAC Matrix Active</span>
+        </div>
       </div>
 
       {/* ========================================================
