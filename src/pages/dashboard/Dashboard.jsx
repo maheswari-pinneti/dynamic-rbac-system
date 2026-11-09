@@ -733,9 +733,6 @@ export const Dashboard = () => {
                 {userRole} Tier
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {currentRoleMeta.subtitle}
-            </p>
           </div>
         </div>
 
@@ -835,9 +832,6 @@ export const Dashboard = () => {
                         {activeCardInfo.value}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                      {activeCardInfo.description}
-                    </p>
                   </div>
                 </div>
 
@@ -1110,9 +1104,6 @@ export const Dashboard = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
-                Operational trajectory remains healthy across all 24 DummyJSON catalog departments. Inventory turn velocity is outpacing quarterly stock depletion forecasts by +4.8%.
-              </p>
             </div>
 
             <div className={`col-span-12 xl:col-span-6 rounded-2xl border ${cardBg} p-4 sm:p-5 flex flex-col justify-between`}>
