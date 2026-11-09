@@ -131,19 +131,19 @@ export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all shadow-2xs hover:bg-slate-200/70 dark:hover:bg-slate-700/80 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/40 select-none ${
+        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all shadow-2xs hover:bg-slate-200/70 dark:hover:bg-slate-700/80 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/40 select-none ${
           isOpen
-            ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/40'
+            ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
             : 'border-slate-200/80 dark:border-slate-700/70'
         }`}
         title="Filter dashboard records by date"
         aria-label="Calendar date selector"
         aria-expanded={isOpen}
       >
-        <CalendarIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-        <span>{formatDateDisplay(selectedDate)}</span>
+        <CalendarIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+        <span className="font-bold tracking-tight">{formatDateDisplay(selectedDate)}</span>
         <ChevronDown
-          className={`w-3 h-3 text-slate-400 ml-0.5 transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 text-slate-400 ml-0.5 transition-transform duration-200 ${
             isOpen ? 'rotate-180 text-blue-500' : ''
           }`}
         />

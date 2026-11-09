@@ -13,6 +13,13 @@ import {
   UserX,
   Crown,
   Sparkles,
+  AlertTriangle,
+  ShieldCheck,
+  Boxes,
+  TrendingUp,
+  CheckCheck,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePermission } from '../../context/PermissionContext';
@@ -30,12 +37,84 @@ export const Header = ({ onMenuClick, isSidebarOpen }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const notifRef = useRef(null);
+
+  // Dynamic notification list with read tracking
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: 'Low Inventory Alert',
+      message: '4 catalog products reached critical restock thresholds (≤10 units).',
+      time: '10m ago',
+      icon: AlertTriangle,
+      iconColor: 'text-amber-500 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+      read: false,
+      link: '/products',
+    },
+    {
+      id: 2,
+      title: 'RBAC Policy Synchronized',
+      message: 'Administrator updated role permissions across Manager tier.',
+      time: '45m ago',
+      icon: ShieldCheck,
+      iconColor: 'text-purple-500 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800',
+      read: false,
+      link: '/admin/settings',
+    },
+    {
+      id: 3,
+      title: 'REST API Catalog Synced',
+      message: '100 products retrieved with 200 OK from DummyJSON API.',
+      time: '2h ago',
+      icon: Boxes,
+      iconColor: 'text-blue-500 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800',
+      read: false,
+      link: '/products',
+    },
+    {
+      id: 4,
+      title: 'WebAuthn Passkey Verified',
+      message: 'Biometric passkey verified for session Sarah Connor (Admin).',
+      time: '4h ago',
+      icon: Sparkles,
+      iconColor: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+      read: false,
+      link: '/profile',
+    },
+    {
+      id: 5,
+      title: 'Valuation Audit Ready',
+      message: 'Monthly financial report ready for export (₹1,48,250 net assets).',
+      time: '6h ago',
+      icon: TrendingUp,
+      iconColor: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+      read: false,
+      link: '/reports',
+    },
+  ]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    info('All pending notifications marked as read', 'Notifications');
+  };
+
+  const handleToggleRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
+    );
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -93,22 +172,117 @@ export const Header = ({ onMenuClick, isSidebarOpen }) => {
       {/* Right side: Date Pill, Notification Bell, Settings, Fullscreen, ThemeToggle, User Profile */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0" ref={dropdownRef}>
         {/* Interactive Calendar Date Dropdown */}
-        <div className="hidden xl:block">
+        <div className="hidden md:block">
           <CalendarDropdown />
         </div>
 
-        {/* Notification Bell with Badge */}
-        <button
-          type="button"
-          className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Notifications (5 pending alerts)"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center animate-pulse shadow-xs">
-            5
-          </span>
-        </button>
+        {/* Notification Bell with Badge & Interactive Dropdown */}
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            onClick={() => setNotifOpen(!notifOpen)}
+            className={`relative p-2 rounded-xl transition-all ${
+              notifOpen
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 ring-2 ring-blue-500/30'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+            title={`Notifications (${unreadCount} unread alerts)`}
+            aria-label="Notifications"
+            aria-expanded={notifOpen}
+          >
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center ring-2 ring-white dark:ring-[#0d1527] shadow-sm animate-pulse">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Notification Popover Dropdown */}
+          {notifOpen && (
+            <div className="absolute right-0 top-full mt-2.5 z-50 w-80 sm:w-96 rounded-2xl bg-white dark:bg-[#0c1427] border border-slate-200/90 dark:border-slate-800 shadow-2xl p-4 text-xs animate-in fade-in slide-in-from-top-2 duration-150">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Notifications</h4>
+                  {unreadCount > 0 ? (
+                    <span className="bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                      {unreadCount} new
+                    </span>
+                  ) : (
+                    <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                      All caught up
+                    </span>
+                  )}
+                </div>
+
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                  >
+                    <CheckCheck className="w-3.5 h-3.5" />
+                    <span>Mark all read</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Notification Items List */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-80 overflow-y-auto my-1 pr-1 custom-sidebar-scroll">
+                {notifications.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handleToggleRead(item.id)}
+                      className={`p-3 rounded-xl transition-all cursor-pointer flex items-start gap-3 my-1 ${
+                        !item.read
+                          ? 'bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100/80 dark:border-blue-900/40'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 mt-0.5 ${item.iconColor}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className={`font-bold truncate leading-tight ${!item.read ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                            {item.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
+                            {item.time}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      {!item.read && (
+                        <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" title="Unread alert" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Real-time alert monitoring</span>
+                <Link
+                  to="/admin/settings"
+                  onClick={() => setNotifOpen(false)}
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <span>Audit Settings</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Settings Icon */}
         {canAccessSettings ? (
