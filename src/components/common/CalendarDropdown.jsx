@@ -9,12 +9,13 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
-export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
+export const CalendarDropdown = ({ initialDate }) => {
+  const resolvedInitialDate = React.useMemo(() => initialDate || new Date(), [initialDate]);
   const { info } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [viewYear, setViewYear] = useState(initialDate.getFullYear());
-  const [viewMonth, setViewMonth] = useState(initialDate.getMonth()); // 0-indexed, 6 = July
+  const [selectedDate, setSelectedDate] = useState(resolvedInitialDate);
+  const [viewYear, setViewYear] = useState(resolvedInitialDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(resolvedInitialDate.getMonth()); // 0-indexed, 10 = November
   const dropdownRef = useRef(null);
 
   // Month names
@@ -30,7 +31,7 @@ export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
 
   const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-  // Format date helper: e.g. "11 Jul 2026"
+  // Format date helper: e.g. "9 Nov 2026"
   const formatDateDisplay = (date) => {
     const day = date.getDate();
     const month = monthShortNames[date.getMonth()];
@@ -95,15 +96,18 @@ export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
 
   // Preset selector
   const handlePreset = (presetType) => {
-    let targetDate = new Date(2026, 6, 11);
+    const today = new Date();
+    let targetDate = new Date(today);
     if (presetType === 'today') {
-      targetDate = new Date(2026, 6, 11);
+      targetDate = new Date(today);
     } else if (presetType === 'yesterday') {
-      targetDate = new Date(2026, 6, 10);
+      targetDate = new Date(today);
+      targetDate.setDate(today.getDate() - 1);
     } else if (presetType === 'week') {
-      targetDate = new Date(2026, 6, 4);
+      targetDate = new Date(today);
+      targetDate.setDate(today.getDate() - 7);
     } else if (presetType === 'start') {
-      targetDate = new Date(2026, 6, 1);
+      targetDate = new Date(today.getFullYear(), today.getMonth(), 1);
     }
 
     setSelectedDate(targetDate);
@@ -122,7 +126,12 @@ export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
   };
 
   const isToday = (day) => {
-    return day === 11 && viewMonth === 6 && viewYear === 2026;
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      viewMonth === today.getMonth() &&
+      viewYear === today.getFullYear()
+    );
   };
 
   return (
@@ -276,11 +285,11 @@ export const CalendarDropdown = ({ initialDate = new Date(2026, 6, 11) }) => {
             <button
               type="button"
               onClick={() => {
-                setSelectedDate(initialDate);
-                setViewYear(initialDate.getFullYear());
-                setViewMonth(initialDate.getMonth());
+                setSelectedDate(resolvedInitialDate);
+                setViewYear(resolvedInitialDate.getFullYear());
+                setViewMonth(resolvedInitialDate.getMonth());
                 setIsOpen(false);
-                info('Reset date filter to 11 Jul 2026', 'Date Reset');
+                info(`Reset date filter to ${formatDateDisplay(resolvedInitialDate)}`, 'Date Reset');
               }}
               className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
