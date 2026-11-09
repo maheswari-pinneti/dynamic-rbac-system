@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Menu,
   Search,
@@ -9,6 +9,7 @@ import {
   Maximize2,
   Minimize2,
   ChevronDown,
+  ChevronRight,
   User,
   UserX,
   Crown,
@@ -143,20 +144,40 @@ export const Header = ({ onMenuClick, isSidebarOpen }) => {
   const humanRoleTitle = ROLE_HUMAN_TITLES[userRole] || 'Executive Administrator';
   const canAccessSettings = userRole === ROLES.ADMIN || hasPermission(PERMISSIONS.SETTINGS, userRole);
   const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Admin';
+  const location = useLocation();
+
+  const getBreadcrumb = () => {
+    const path = location.pathname;
+    if (path === '/' || path === '/dashboard') return { title: 'Dashboard', parent: 'Overview' };
+    if (path.startsWith('/products')) return { title: 'Products Catalog', parent: 'Records' };
+    if (path.startsWith('/analytics')) return { title: 'Analytics & Insights', parent: 'Intelligence' };
+    if (path.startsWith('/reports')) return { title: 'Valuation & Reports', parent: 'Audit' };
+    if (path.startsWith('/admin')) return { title: 'Permission Matrix', parent: 'Administration' };
+    if (path.startsWith('/profile')) return { title: 'User Profile & Passkeys', parent: 'Account' };
+    return { title: 'Workspace', parent: 'App' };
+  };
+  const breadcrumb = getBreadcrumb();
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#0d1527]/95 backdrop-blur border-b border-slate-200/90 dark:border-slate-800/90 px-4 sm:px-6 h-16 flex items-center justify-between transition-colors duration-200 shadow-2xs">
-      {/* Left side: Hamburger button + Search Bar */}
+      {/* Left side: Hamburger button + Breadcrumbs + Search Bar */}
       <div className="flex items-center gap-3.5 flex-1 min-w-0 mr-4">
         <button
           type="button"
           onClick={onMenuClick}
-          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 focus:outline-none transition-colors border border-slate-200/80 dark:border-slate-800"
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 focus:outline-none transition-colors border border-slate-200/80 dark:border-slate-800 flex-shrink-0"
           title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           aria-label="Toggle navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {/* Dynamic Breadcrumbs */}
+        <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+          <span className="text-slate-400 dark:text-slate-500">{breadcrumb.parent}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+          <span className="font-bold text-slate-800 dark:text-slate-100">{breadcrumb.title}</span>
+        </div>
 
         {/* Global Search Bar */}
         <div className="relative max-w-xs sm:max-w-sm w-full">
@@ -181,16 +202,16 @@ export const Header = ({ onMenuClick, isSidebarOpen }) => {
           <button
             type="button"
             onClick={() => setNotifOpen(!notifOpen)}
-            className={`relative p-2 rounded-xl transition-all ${
+            className={`relative w-9 h-9 inline-flex items-center justify-center rounded-full transition-all border ${
               notifOpen
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 ring-2 ring-blue-500/30'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-blue-50 text-blue-600 border-blue-500/50 dark:bg-blue-950/60 dark:text-blue-400 ring-2 ring-blue-500/30'
+                : 'bg-slate-100/90 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/80 hover:text-slate-900 dark:hover:text-white'
             }`}
             title={`Notifications (${unreadCount} unread alerts)`}
             aria-label="Notifications"
             aria-expanded={notifOpen}
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 flex-shrink-0" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center ring-2 ring-white dark:ring-[#0d1527] shadow-sm animate-pulse">
                 {unreadCount}

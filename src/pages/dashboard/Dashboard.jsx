@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer,
   LineChart,
@@ -46,12 +46,16 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   TrendingDown,
+  Calendar,
+  Download,
+  ShieldAlert,
+  Filter,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProduct } from '../../context/ProductContext';
 import { usePermission } from '../../context/PermissionContext';
 import { useTheme } from '../../context/ThemeContext';
-import { ROLES } from '../../utils/constants';
+import { ROLES, PERMISSIONS } from '../../utils/constants';
 import { formatCurrency, formatNumber, timeAgo, getHumanGreeting } from '../../utils/formatters';
 import ChartPreviewModal from '../../components/common/ChartPreviewModal';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
@@ -83,13 +87,25 @@ const renderSparkline = (type = 'up', color = '#10b981') => {
 };
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
   const { allProducts, loading } = useProduct();
   const { currentUser, users, loginHistory } = useAuth();
-  const { activityLogs } = usePermission();
+  const { activityLogs, hasPermission } = usePermission();
   const { isDark } = useTheme();
 
   // Active role
   const userRole = currentUser?.role || ROLES.ADMIN;
+
+  // Dynamic Dashboard Permissions Evaluation
+  const canViewKpiRecords = hasPermission(PERMISSIONS.DASHBOARD_KPI_RECORDS, userRole) && hasPermission(PERMISSIONS.VIEW_RECORDS, userRole);
+  const canViewKpiUsers = hasPermission(PERMISSIONS.DASHBOARD_KPI_USERS, userRole) && hasPermission(PERMISSIONS.USERS_VIEW, userRole);
+  const canViewCharts = hasPermission(PERMISSIONS.DASHBOARD_CHARTS, userRole) && hasPermission(PERMISSIONS.ANALYTICS, userRole);
+  const canViewActivity = hasPermission(PERMISSIONS.DASHBOARD_ACTIVITY, userRole);
+  const canViewHealth = hasPermission(PERMISSIONS.DASHBOARD_HEALTH, userRole);
+  const canExportDashboard = hasPermission(PERMISSIONS.DASHBOARD_EXPORT, userRole);
+
+  // Date Range Filter State ('today' | '7d' | '30d' | '90d' | 'custom')
+  const [dateRange, setDateRange] = useState('30d');
 
   // Active KPI Filter State (for Admin view)
   const [selectedKpi, setSelectedKpi] = useState(null);
@@ -100,6 +116,30 @@ export const Dashboard = () => {
   const handleOpenChartPreview = (config) => {
     setPreviewChart(config);
     setIsPreviewOpen(true);
+  };
+
+  // Export Dashboard Report handler
+  const handleExportDashboard = () => {
+    const csvContent = [
+      ['Metric', 'Value', 'Timeframe', 'Generated At'],
+      ['Total Records', totalRecords, dateRange, new Date().toISOString()],
+      ['Dispatch Ready Stock', totalActiveRecords, dateRange, new Date().toISOString()],
+      ['Restock Required', totalInactiveRecords, dateRange, new Date().toISOString()],
+      ['Total Managers', totalManagers, dateRange, new Date().toISOString()],
+      ['Total Specialists', totalEmployees, dateRange, new Date().toISOString()],
+      ['Total Active Roles', totalRoles, dateRange, new Date().toISOString()],
+      ['New Records This Month', newRecordsThisMonth, dateRange, new Date().toISOString()],
+      ['Catalog Valuation', '₹1,48,250.00', dateRange, new Date().toISOString()],
+    ].map((e) => e.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `dashboard_metrics_${dateRange}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
 
@@ -346,14 +386,23 @@ export const Dashboard = () => {
 
 
 
-  // Recent Activities
-  const recentActivities = [
-    { id: 'act_1', user: 'Sarah Connor (Admin)', action: 'Updated dynamic permissions for Manager role in Matrix', time: 'Just now', role: 'Admin' },
-    { id: 'act_2', user: 'Marcus Vance (Manager)', action: 'Updated inventory buffer for Essence Mascara Lash', time: '12 mins ago', role: 'Manager' },
-    { id: 'act_3', user: 'Elena Rostova (Employee)', action: 'Created new product record "Wireless Earbuds"', time: '1 hour ago', role: 'Employee' },
-    { id: 'act_4', user: 'System Security Engine', action: 'Daily database backup and catalog verification completed safely', time: '2 hours ago', role: 'System' },
-    { id: 'act_5', user: 'Sarah Connor (Admin)', action: 'Authenticated via Windows Hello Biometric Passkey', time: '3 hours ago', role: 'Admin' },
-  ];
+  // Live Dynamic Recent Activities from PermissionContext
+  const recentActivities = useMemo(() => {
+    if (activityLogs && Array.isArray(activityLogs) && activityLogs.length > 0) {
+      return activityLogs.slice(0, 5).map((act) => ({
+        id: act.id,
+        user: act.user,
+        action: act.details ? `${act.action} — ${act.details}` : act.action,
+        time: timeAgo(act.timestamp),
+        role: act.role || 'System',
+      }));
+    }
+    return [
+      { id: 'act_1', user: 'Sarah Connor (Admin)', action: 'Dynamic RBAC policy framework verified', time: 'Just now', role: 'Admin' },
+      { id: 'act_2', user: 'Marcus Vance (Manager)', action: 'Synchronized DummyJSON products catalog', time: '12 mins ago', role: 'Manager' },
+      { id: 'act_3', user: 'Elena Rostova (Employee)', action: 'Reviewed dispatch-ready stock buffers', time: '1 hour ago', role: 'Employee' },
+    ];
+  }, [activityLogs]);
 
   // Top Categories (DummyJSON API)
   const topCategories = [
@@ -742,6 +791,79 @@ export const Dashboard = () => {
         </div>
       </div>
 
+            {/* Date Range Filter Bar & CSV Export Button */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-[#0c1427] border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1.5 hidden sm:inline-flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+            <span>Timeframe:</span>
+          </span>
+          {[
+            { id: 'today', label: 'Today' },
+            { id: '7d', label: '7 Days' },
+            { id: '30d', label: '30 Days' },
+            { id: '90d', label: '90 Days' },
+            { id: 'custom', label: 'Custom' },
+          ].map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => setDateRange(preset.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                dateRange === preset.id
+                  ? 'bg-blue-600 text-white shadow-xs ring-2 ring-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
+        {canExportDashboard && (
+          <button
+            type="button"
+            onClick={handleExportDashboard}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs cursor-pointer"
+            title="Download CSV report of current metrics"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-500" />
+            <span>Export Report (CSV)</span>
+          </button>
+        )}
+      </div>
+
+      {/* Dynamic Empty State when all dashboard permissions are disabled */}
+      {!canViewKpiRecords && !canViewKpiUsers && !canViewCharts && !canViewActivity && !canViewHealth && (
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#0c1427] p-8 text-center shadow-xs">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-500 mb-4">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+            No Dashboard Widgets Permitted
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1 leading-relaxed">
+            All dashboard widgets, KPI summaries, and analytics charts have been restricted for your role ({userRole}) in the Dynamic Permission Matrix.
+          </p>
+          <div className="mt-5 flex items-center justify-center gap-3">
+            <Link
+              to="/profile"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              View User Profile
+            </Link>
+            {userRole === ROLES.ADMIN && (
+              <Link
+                to="/admin/settings"
+                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+              >
+                Configure Permission Matrix
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           VIEW 1: ADMIN DASHBOARD (EXECUTIVE & GOVERNANCE VIEW)
           ======================================================== */}
@@ -859,6 +981,28 @@ export const Dashboard = () => {
                     </span>
                   </div>
                 ))}
+              </div>
+
+              {/* Direct filtered catalog navigation */}
+              <div className="mt-3.5 pt-3 border-t border-blue-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
+                  Inspect the filtered record dataset in the main repository:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeCardInfo.id === 'total-records') navigate('/products');
+                    else if (activeCardInfo.id === 'active-records') navigate('/products?status=in_stock');
+                    else if (activeCardInfo.id === 'inactive-records') navigate('/products?status=low_stock');
+                    else if (activeCardInfo.id === 'total-managers' || activeCardInfo.id === 'total-employees' || activeCardInfo.id === 'total-roles') navigate('/admin/settings');
+                    else if (activeCardInfo.id === 'new-records-this-month') navigate('/products');
+                    else navigate('/reports');
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer text-xs"
+                >
+                  <span>Explore Matching Records</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           )}
@@ -1353,7 +1497,8 @@ export const Dashboard = () => {
             })}
           </div>
 
-          {/* Manager Analytics Charts Row */}
+          {/* Manager Analytics Charts Row - Gated by canViewCharts */}
+          {canViewCharts && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
             {/* Monthly Growth Line Chart */}
             <div
@@ -1452,6 +1597,7 @@ export const Dashboard = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Low Stock Alert Table & Stock Summary Card */}
           <div className="grid grid-cols-12 gap-3.5">
@@ -1673,7 +1819,8 @@ export const Dashboard = () => {
             </div>
           </div>
 
-          {/* Employee Visual Analytics Grid */}
+          {/* Employee Visual Analytics Grid - Gated by canViewCharts */}
+          {canViewCharts && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {/* Weekly Activity Bar Chart */}
             <div
@@ -1763,6 +1910,7 @@ export const Dashboard = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Spotlight Catalog Items for Employee */}
           <div className={`rounded-2xl border ${cardBg} p-4 sm:p-5`}>

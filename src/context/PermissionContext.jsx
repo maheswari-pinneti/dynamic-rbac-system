@@ -81,7 +81,12 @@ export const PermissionProvider = ({ children }) => {
       if (userRole === ROLES.ADMIN) {
         return true;
       }
-      return !!permissions[userRole]?.[permissionKey];
+      const val = permissions[userRole]?.[permissionKey];
+      if (val !== undefined) {
+        return !!val;
+      }
+      // Graceful fallback to default matrix if key was newly added
+      return !!DEFAULT_PERMISSIONS[userRole]?.[permissionKey];
     },
     [permissions]
   );
@@ -175,6 +180,58 @@ export const PermissionProvider = ({ children }) => {
     );
   }, [logActivity]);
 
+  /**
+   * Quick Action: Grant all permissions to a given role
+   */
+  const selectAllForRole = useCallback((role, user = null) => {
+    setPermissions((prev) => {
+      const allTrue = {};
+      Object.values(PERMISSIONS).forEach((permKey) => {
+        allTrue[permKey] = true;
+      });
+      const updated = {
+        ...prev,
+        [role]: allTrue,
+      };
+      storage.set(STORAGE_KEYS.PERMISSIONS_MATRIX, updated);
+      return updated;
+    });
+
+    logActivity(
+      'Permissions Bulk Granted',
+      `All permissions granted to role "${role}".`,
+      user,
+      'security'
+    );
+  }, [logActivity]);
+
+  /**
+   * Quick Action: Revoke all permissions from a given role
+   */
+  const clearAllForRole = useCallback((role, user = null) => {
+    setPermissions((prev) => {
+      const allFalse = {};
+      Object.values(PERMISSIONS).forEach((permKey) => {
+        allFalse[permKey] = false;
+      });
+      // Always retain basic profile view so user can log out / inspect profile
+      allFalse[PERMISSIONS.PROFILE] = true;
+      const updated = {
+        ...prev,
+        [role]: allFalse,
+      };
+      storage.set(STORAGE_KEYS.PERMISSIONS_MATRIX, updated);
+      return updated;
+    });
+
+    logActivity(
+      'Permissions Bulk Revoked',
+      `All permissions revoked from role "${role}".`,
+      user,
+      'security'
+    );
+  }, [logActivity]);
+
   return (
     <PermissionContext.Provider
       value={{
@@ -184,6 +241,8 @@ export const PermissionProvider = ({ children }) => {
         updateSinglePermission,
         savePermissionsMatrix,
         resetToDefaults,
+        selectAllForRole,
+        clearAllForRole,
         activityLogs,
         logActivity,
         permissionDefinitions: PERMISSION_DEFINITIONS,

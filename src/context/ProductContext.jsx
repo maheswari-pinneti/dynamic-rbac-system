@@ -4,11 +4,12 @@ import { storage, STORAGE_KEYS } from '../utils/storage';
 import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { usePermission } from './PermissionContext';
 import { useAuth } from './AuthContext';
+import { PERMISSIONS } from '../utils/constants';
 
 const ProductContext = createContext(null);
 
 export const ProductProvider = ({ children }) => {
-  const { logActivity } = usePermission();
+  const { logActivity, hasPermission } = usePermission();
   const { currentUser } = useAuth();
 
   // Local overrides (created, updated, deleted products that survive page refresh)
@@ -228,6 +229,10 @@ export const ProductProvider = ({ children }) => {
    */
   const createProduct = useCallback(
     async (productData) => {
+      // Enforce API-level RBAC Gate
+      if (!hasPermission(PERMISSIONS.CREATE_RECORDS, currentUser?.role)) {
+        throw new Error('403 Forbidden: Your assigned role lacks permission to create records.');
+      }
       try {
         // Execute real Third-Party API call (with graceful fallback for offline environments)
         let apiResponse = {};
@@ -274,7 +279,7 @@ export const ProductProvider = ({ children }) => {
         throw err;
       }
     },
-    [currentUser, logActivity]
+    [currentUser, logActivity, hasPermission]
   );
 
   /**
@@ -282,6 +287,10 @@ export const ProductProvider = ({ children }) => {
    */
   const updateProduct = useCallback(
     async (id, updatedFields) => {
+      // Enforce API-level RBAC Gate
+      if (!hasPermission(PERMISSIONS.EDIT_RECORDS, currentUser?.role)) {
+        throw new Error('403 Forbidden: Your assigned role lacks permission to modify records.');
+      }
       try {
         // Call remote API for realism
         try {
@@ -326,7 +335,7 @@ export const ProductProvider = ({ children }) => {
         throw err;
       }
     },
-    [currentUser, logActivity]
+    [currentUser, logActivity, hasPermission]
   );
 
   /**
@@ -334,6 +343,10 @@ export const ProductProvider = ({ children }) => {
    */
   const deleteProduct = useCallback(
     async (id, productTitle = '') => {
+      // Enforce API-level RBAC Gate
+      if (!hasPermission(PERMISSIONS.DELETE_RECORDS, currentUser?.role)) {
+        throw new Error('403 Forbidden: Your assigned role lacks permission to delete records.');
+      }
       try {
         try {
           await productsApi.deleteProduct(id);
@@ -360,7 +373,7 @@ export const ProductProvider = ({ children }) => {
         throw err;
       }
     },
-    [currentUser, logActivity]
+    [currentUser, logActivity, hasPermission]
   );
 
   /**

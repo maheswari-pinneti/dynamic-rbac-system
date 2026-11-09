@@ -44,16 +44,121 @@ export const ROLE_BADGE_COLORS = {
  * All permission identifiers in the system
  */
 export const PERMISSIONS = {
+  // Core Module & Page Views
   DASHBOARD: 'dashboard.view',
+  DASHBOARD_EXPORT: 'dashboard.export',
   ANALYTICS: 'analytics.view',
+  ANALYTICS_EXPORT: 'analytics.export',
   VIEW_RECORDS: 'records.view',
   CREATE_RECORDS: 'records.create',
   EDIT_RECORDS: 'records.edit',
   DELETE_RECORDS: 'records.delete',
+  RECORDS_EXPORT: 'records.export',
   REPORTS: 'reports.view',
+  REPORTS_CREATE: 'reports.create',
+  REPORTS_EXPORT: 'reports.export',
+  USERS_VIEW: 'users.view',
+  USERS_CREATE: 'users.create',
+  USERS_EDIT: 'users.edit',
+  USERS_DELETE: 'users.delete',
+  USERS_EXPORT: 'users.export',
   SETTINGS: 'settings.manage',
   PROFILE: 'profile.view',
+  PROFILE_EDIT: 'profile.edit',
+
+  // Granular Dynamic Dashboard Widget Permissions
+  DASHBOARD_KPI_RECORDS: 'dashboard.kpi_records',
+  DASHBOARD_KPI_USERS: 'dashboard.kpi_users',
+  DASHBOARD_CHARTS: 'dashboard.charts',
+  DASHBOARD_ACTIVITY: 'dashboard.activity',
+  DASHBOARD_HEALTH: 'dashboard.health',
 };
+
+/**
+ * Enterprise Module Matrix Definition
+ * Columns: View, Create, Edit, Delete, Export
+ */
+export const PERMISSION_MODULES = [
+  {
+    id: 'dashboard',
+    name: 'Dashboard',
+    description: 'Executive overview, widgets, metrics, and KPI cards',
+    actions: {
+      view: 'dashboard.view',
+      export: 'dashboard.export',
+    },
+    widgets: [
+      { key: 'dashboard.kpi_records', label: 'Catalog KPIs (Total, Active, Low Stock)' },
+      { key: 'dashboard.kpi_users', label: 'Team KPIs (Managers, Staff, Roles)' },
+      { key: 'dashboard.charts', label: 'Performance Analytics Charts' },
+      { key: 'dashboard.activity', label: 'Live Audit Activity Trail' },
+      { key: 'dashboard.health', label: 'Infrastructure & System Health' },
+    ],
+  },
+  {
+    id: 'users',
+    name: 'Users',
+    description: 'Team member directory, role assignments, and account security',
+    actions: {
+      view: 'users.view',
+      create: 'users.create',
+      edit: 'users.edit',
+      delete: 'users.delete',
+      export: 'users.export',
+    },
+  },
+  {
+    id: 'records',
+    name: 'Records (Catalog)',
+    description: 'Product merchandise, pricing, stock levels, and REST API records',
+    actions: {
+      view: 'records.view',
+      create: 'records.create',
+      edit: 'records.edit',
+      delete: 'records.delete',
+      export: 'records.export',
+    },
+  },
+  {
+    id: 'analytics',
+    name: 'Analytics',
+    description: 'Visual charts, category distribution, and growth trends',
+    actions: {
+      view: 'analytics.view',
+      export: 'analytics.export',
+    },
+  },
+  {
+    id: 'reports',
+    name: 'Reports',
+    description: 'Inventory valuation, stock alert reports, and CSV spreadsheets',
+    actions: {
+      view: 'reports.view',
+      create: 'reports.create',
+      edit: 'reports.edit',
+      export: 'reports.export',
+    },
+  },
+  {
+    id: 'settings',
+    name: 'Settings',
+    description: 'Dynamic RBAC permission matrix and enterprise access policies',
+    actions: {
+      view: 'settings.manage',
+      edit: 'settings.manage',
+    },
+    adminOnly: true,
+  },
+  {
+    id: 'profile',
+    name: 'Profile',
+    description: 'Personal bio, security credentials, and WebAuthn Passkeys',
+    actions: {
+      view: 'profile.view',
+      edit: 'profile.edit',
+    },
+  },
+];
 
 /**
  * Human-Friendly Permission Metadata
@@ -139,37 +244,103 @@ export const PERMISSION_DEFINITIONS = [
  */
 export const DEFAULT_PERMISSIONS = {
   [ROLES.ADMIN]: {
+    // Dashboard & Widgets
     [PERMISSIONS.DASHBOARD]: true,
-    [PERMISSIONS.ANALYTICS]: true,
+    [PERMISSIONS.DASHBOARD_EXPORT]: true,
+    [PERMISSIONS.DASHBOARD_KPI_RECORDS]: true,
+    [PERMISSIONS.DASHBOARD_KPI_USERS]: true,
+    [PERMISSIONS.DASHBOARD_CHARTS]: true,
+    [PERMISSIONS.DASHBOARD_ACTIVITY]: true,
+    [PERMISSIONS.DASHBOARD_HEALTH]: true,
+    // Records
     [PERMISSIONS.VIEW_RECORDS]: true,
     [PERMISSIONS.CREATE_RECORDS]: true,
     [PERMISSIONS.EDIT_RECORDS]: true,
     [PERMISSIONS.DELETE_RECORDS]: true,
+    [PERMISSIONS.RECORDS_EXPORT]: true,
+    // Analytics
+    [PERMISSIONS.ANALYTICS]: true,
+    [PERMISSIONS.ANALYTICS_EXPORT]: true,
+    // Reports
     [PERMISSIONS.REPORTS]: true,
+    [PERMISSIONS.REPORTS_CREATE]: true,
+    [PERMISSIONS.REPORTS_EXPORT]: true,
+    // Users
+    [PERMISSIONS.USERS_VIEW]: true,
+    [PERMISSIONS.USERS_CREATE]: true,
+    [PERMISSIONS.USERS_EDIT]: true,
+    [PERMISSIONS.USERS_DELETE]: true,
+    [PERMISSIONS.USERS_EXPORT]: true,
+    // Settings & Profile
     [PERMISSIONS.SETTINGS]: true,
     [PERMISSIONS.PROFILE]: true,
+    [PERMISSIONS.PROFILE_EDIT]: true,
   },
   [ROLES.MANAGER]: {
+    // Dashboard & Widgets
     [PERMISSIONS.DASHBOARD]: true,
-    [PERMISSIONS.ANALYTICS]: true,
+    [PERMISSIONS.DASHBOARD_EXPORT]: true,
+    [PERMISSIONS.DASHBOARD_KPI_RECORDS]: true,
+    [PERMISSIONS.DASHBOARD_KPI_USERS]: true,
+    [PERMISSIONS.DASHBOARD_CHARTS]: true,
+    [PERMISSIONS.DASHBOARD_ACTIVITY]: true,
+    [PERMISSIONS.DASHBOARD_HEALTH]: true,
+    // Records
     [PERMISSIONS.VIEW_RECORDS]: true,
     [PERMISSIONS.CREATE_RECORDS]: true,
     [PERMISSIONS.EDIT_RECORDS]: true,
     [PERMISSIONS.DELETE_RECORDS]: false,
+    [PERMISSIONS.RECORDS_EXPORT]: true,
+    // Analytics
+    [PERMISSIONS.ANALYTICS]: true,
+    [PERMISSIONS.ANALYTICS_EXPORT]: true,
+    // Reports
     [PERMISSIONS.REPORTS]: true,
+    [PERMISSIONS.REPORTS_CREATE]: true,
+    [PERMISSIONS.REPORTS_EXPORT]: true,
+    // Users
+    [PERMISSIONS.USERS_VIEW]: true,
+    [PERMISSIONS.USERS_CREATE]: false,
+    [PERMISSIONS.USERS_EDIT]: false,
+    [PERMISSIONS.USERS_DELETE]: false,
+    [PERMISSIONS.USERS_EXPORT]: true,
+    // Settings & Profile
     [PERMISSIONS.SETTINGS]: false,
     [PERMISSIONS.PROFILE]: true,
+    [PERMISSIONS.PROFILE_EDIT]: true,
   },
   [ROLES.EMPLOYEE]: {
+    // Dashboard & Widgets
     [PERMISSIONS.DASHBOARD]: true,
-    [PERMISSIONS.ANALYTICS]: true,
+    [PERMISSIONS.DASHBOARD_EXPORT]: false,
+    [PERMISSIONS.DASHBOARD_KPI_RECORDS]: true,
+    [PERMISSIONS.DASHBOARD_KPI_USERS]: false,
+    [PERMISSIONS.DASHBOARD_CHARTS]: false,
+    [PERMISSIONS.DASHBOARD_ACTIVITY]: true,
+    [PERMISSIONS.DASHBOARD_HEALTH]: false,
+    // Records
     [PERMISSIONS.VIEW_RECORDS]: true,
     [PERMISSIONS.CREATE_RECORDS]: false,
     [PERMISSIONS.EDIT_RECORDS]: false,
     [PERMISSIONS.DELETE_RECORDS]: false,
+    [PERMISSIONS.RECORDS_EXPORT]: false,
+    // Analytics
+    [PERMISSIONS.ANALYTICS]: false,
+    [PERMISSIONS.ANALYTICS_EXPORT]: false,
+    // Reports
     [PERMISSIONS.REPORTS]: false,
+    [PERMISSIONS.REPORTS_CREATE]: false,
+    [PERMISSIONS.REPORTS_EXPORT]: false,
+    // Users
+    [PERMISSIONS.USERS_VIEW]: false,
+    [PERMISSIONS.USERS_CREATE]: false,
+    [PERMISSIONS.USERS_EDIT]: false,
+    [PERMISSIONS.USERS_DELETE]: false,
+    [PERMISSIONS.USERS_EXPORT]: false,
+    // Settings & Profile
     [PERMISSIONS.SETTINGS]: false,
     [PERMISSIONS.PROFILE]: true,
+    [PERMISSIONS.PROFILE_EDIT]: true,
   },
 };
 
